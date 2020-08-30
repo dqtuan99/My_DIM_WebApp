@@ -1,5 +1,5 @@
 import Point from './point.model.js';
-import {TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER} from './tool.js';
+import { TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER } from './tool.js';
 import Fill from './fill.class.js';
 import getMouseCoordsOnCanvas from './utils.js'
 
@@ -7,6 +7,7 @@ export default class Paint {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.context = canvas.getContext("2d");
+        this.context.lineJoin = 'round';
         this.context.lineCap = 'round';
 
         this.undoStack = [];
@@ -51,14 +52,25 @@ export default class Paint {
         document.onmouseup = e => this.onMouseUp(e);
 
         this.startPos = getMouseCoordsOnCanvas(e, this.canvas);
-        // console.log("\n===================================");
-        // console.log("onMouseDown, this.startPos =", this.startPos);
-        // console.log("onMouseDown, this.tool =", this.tool);
-        // console.log("===================================\n");
+        console.log("\n===================================");
+        console.log("onMouseDown, this.startPos =", this.startPos);
+        console.log("onMouseDown, this.tool =", this.tool);
+        console.log("===================================\n");
         if (this.tool == TOOL_BRUSH) {
             // console.log("onMouseDown, TOOL_BRUSH branch");
+            // this.context.beginPath();
+            // this.context.moveTo(this.startPos.x, this.startPos.y);            
+            // this.context.strokeStyle = this.color;
+
             this.context.beginPath();
-            this.context.moveTo(this.startPos.x, this.startPos.y);
+            this.context.arc(this.startPos.x, this.startPos.y, this.context.lineWidth/2, 0, 2 * Math.PI);
+            this.context.fillStyle = this.color;
+            this.context.fill();
+
+            this.context.beginPath();
+            this.context.moveTo(this.startPos.x, this.startPos.y);            
+            this.context.strokeStyle = this.color;
+
         } else if (this.tool == TOOL_PAINT_BUCKET) {
             // console.log("onMouseDown, TOOL_PAINT_BUCKET branch");
             new Fill(this.canvas, this.startPos, this.color);
@@ -76,8 +88,7 @@ export default class Paint {
         // console.log("onMouseMove, this.tool =", this.tool);
         // console.log("===================================\n");
         if (this.tool == TOOL_BRUSH) {
-            // console.log("onMouseMove, TOOL_BRUSH branch");
-            this.context.strokeStyle = this.color;
+            // console.log("onMouseMove, TOOL_BRUSH branch");        
             this.drawFreeLine(this._lineWidth);
         } else if (this.tool == TOOL_ERASER) {
             // console.log("onMouseMove, not TOOL_BRUSH branch");
@@ -120,7 +131,7 @@ export default class Paint {
 
     undoPaint() {
         if (this.undoStack.length > 0) {
-            let latestImage = this.undoStack[this.undoStack.length-1];
+            let latestImage = this.undoStack[this.undoStack.length - 1];
             console.log("latestImage = ", latestImage);
             this.canvas.width = latestImage.width;
             this.canvas.height = latestImage.height;

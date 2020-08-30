@@ -1,0 +1,39 @@
+body {
+    margin: 0px;
+    background-color: #edf2ef;
+    overflow: hidden;
+    background-image: url('../image/png-background.jpg');
+    background-repeat: repeat;
+}
+
+.image-upload>input {
+  display: none;
+}
+
+.container {
+    border: solid red 1px;
+    position: relative;
+    height: 90vh;
+    min-width: 90vw;
+    top: 50px;
+    cursor: move;
+}
+
+.container * {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#canvas {
+    border: dashed 8px gray;
+    z-index: 0;
+    opacity: 0.7;
+    /* cursor: cell; */
+    cursor: none;
+}
+
+#canvas-background {
+    z-index: -1;
+}

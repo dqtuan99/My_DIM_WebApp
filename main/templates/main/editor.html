@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Document{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/toolbox.css' %}">
+    <script type="module" src="{% static 'main/js/paintapp.js' %}" defer></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+        $(function () {
+            $("#draggable").draggable({
+                cancel: "#canvas",
+                scroll: false
+            });
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    {% block body %}
+
+    <div class="container" id="draggable">
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <img id="canvas-background">
+    </div>
+
+    <div class="canvas-cursor"></div>
+    <div class="toolbox">
+        <div class="group command">
+            <div class="item">
+                <label for="imageLoader" style="cursor: pointer; margin: -1px;">
+                    <img src="{% static 'main/image/upload.svg' %}" alt="">
+                    <br />Upload
+                </label>
+                <input id="imageLoader" type="file" onclick="this.value=null;" type="file" accept=".jpg, .jpeg, .png"
+                    style="display: none;" />
+            </div>
+            <div class="item" data-command="undo">
+                <img src="{% static 'main/image/undo.svg' %}" alt="">
+                <br />Undo
+            </div>
+            <div class="item" data-command="redo">
+                <img src="{% static 'main/image/redo.svg' %}" alt="">
+                <br />Redo
+            </div>
+        </div>
+        <div class="group-separator"></div>
+        <div class="group tool">
+            <div class="item active" data-tool="brush">
+                <img src="{% static 'main/image/brush.svg' %}" alt="">
+                <br />Brush
+            </div>
+            <div class="item" data-tool="eraser">
+                <img src="{% static 'main/image/eraser.svg' %}" alt="">
+                <br />Eraser
+            </div>
+            <div class="item2">
+                <input type="number" id="brushSize" name="brush-size" min="15" max="60" step="5" value="25">
+                <br />Brush size
+            </div>
+        </div>
+        <div class="group-separator"></div>
+        <div class="group result">
+            <div class="item" data-result="restart">
+                <img src="{% static 'main/image/restart.svg' %}" alt="">
+                <br />Clear all
+            </div>
+            <div class="item" data-result="predict">
+                <img src="{% static 'main/image/predict.svg' %}" alt="">
+                <br />Predict
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+        <div class="btn-group commands mr-2" role="group" aria-label="Commands group">
+            <button type="button" data-command="upload" class="btn btn-primary">
+                <div class="image-upload" style="cursor:pointer;">
+                    <label for="imageLoader">
+                        <img src="{% static 'main/image/upload-photo.jpg' %}" style="cursor:pointer;" />
+                    </label>
+
+                    <input id="imageLoader" type="file" onclick="this.value=null;" type="file"
+                        accept=".jpg, .jpeg, .png" />
+                </div>
+            </button>
+            <button type="button" data-command="undo" class="btn btn-primary">Undo</button>
+            <button type="button" data-command="redo" class="btn btn-primary">Redo</button>
+            <button type="button" data-command="submit" class="btn btn-primary">Submit</button>
+        </div>
+        <div class="btn-group tools" role="group" aria-label="Tools group">
+            <button type="button" data-tool="brush" class="btn btn-primary active">Brush</button>
+            <button type="button" data-tool="eraser" class="btn btn-primary">Eraser</button>
+        </div>
+    </div> -->
+
+    <div class="canvas-cursor"></div>
+
+    <!-- <div class="toolbox left">
+        <div class="group command">
+            <div class="item" data-command="upload" title="Upload">
+                <div class="image-upload" style="cursor:pointer;">
+                    <label for="imageLoader">
+                        <img src="{% static 'main/image/upload-photo.jpg' %}" style="cursor:pointer;" />
+                    </label>
+
+                    <input id="imageLoader" type="file" onclick="this.value=null;" type="file"
+                        accept=".jpg, .jpeg, .png" />
+                </div>
+            </div>
+            <div class="item" data-command="undo" title="Undo">
+                <img src="{% static 'main/image/undo.png' %}" alt="">
+            </div>
+            <div class="item" data-command="download" title="Download">
+                <img src="{% static 'main/image/download.png' %}" alt="">
+            </div>
+        </div>
+        <div class="group tools">
+            <div class="item active" data-tool="brush" title="Brush">
+                <img src="{% static 'main/image/brush.png' %}" alt="">
+            </div>
+            <div class="item" data-tool="paint-bucket" title="Paint Bucket">
+                <img src="{% static 'main/image/paint-bucket.png' %}" alt="">
+            </div>
+            <div class="item" data-tool="eraser" title="Eraser">
+                <img src="{% static 'main/image/eraser.png' %}" alt="">
+            </div>
+        </div>
+        <div class="group linewidths">
+            <div class="item" data-line-width="5" title="5 Pixel">
+                <div class="linewidth" style="width: 5px; height: 5px;"></div>
+            </div>
+            <div class="item" data-line-width="10" title="10 Pixel">
+                <div class="linewidth" style="width: 10px; height: 10px;"></div>
+            </div>
+            <div class="item active" data-line-width="15" title="15 Pixel">
+                <div class="linewidth" style="width: 15px; height: 15px;"></div>
+            </div>
+            <div class="item" data-line-width="20" title="20 Pixel">
+                <div class="linewidth" style="width: 20px; height: 20px;"></div>
+            </div>
+            <div class="item" data-line-width="25" title="25 Pixel">
+                <div class="linewidth" style="width: 25px; height: 25px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbox right">
+        <div class="group swatches">
+            <div class="item active" data-color="#7F7F7F">
+                <div class="swatch" style="background-color: #7F7F7F"></div>
+            </div>
+            <div class="item" data-color="#37D61A">
+                <div class="swatch" style="background-color: #37D61A"></div>
+            </div>
+            <div class="item" data-color="#FD0A0A">
+                <div class="swatch" style="background-color: #FD0A0A"></div>
+            </div>
+        </div>
+    </div> -->
+
+    {% endblock %}
+</body>
+
+</html>

@@ -1,9 +1,9 @@
-import {TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER} from './tool.js';
+import { TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER } from './tool.js';
 import Paint from './paint.class.js';
 
 let paint = new Paint("canvas");
 paint.activeTool = TOOL_BRUSH;
-paint.lineWidth = 15;
+paint.lineWidth = 25;
 paint.selectedColor = '#7F7F7F';
 paint.init();
 
@@ -36,7 +36,7 @@ let imageLoader = document.getElementById("imageLoader");
 imageLoader.addEventListener('change', handleImage, false);
 function handleImage(e) {
     let reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = function (event) {
         var img = new Image();
         img.onload = function () {
             paint.canvas.width = img.width;
@@ -99,32 +99,78 @@ document.querySelectorAll("[data-tool]").forEach(
     }
 );
 
-document.querySelectorAll("[data-line-width]").forEach(
-    item => {
-        item.addEventListener("click", e => {
-            document.querySelector("[data-line-width].active").classList.toggle("active");
-            item.classList.toggle("active");
+// document.querySelectorAll("[data-line-width]").forEach(
+//     item => {
+//         item.addEventListener("click", e => {
+//             document.querySelector("[data-line-width].active").classList.toggle("active");
+//             item.classList.toggle("active");
 
-            let lineWidth = item.getAttribute("data-line-width");
-            paint.lineWidth = lineWidth;
+//             let lineWidth = item.getAttribute("data-line-width");
+//             paint.lineWidth = lineWidth;
+//         });
+//     }
+// );
+
+// document.querySelectorAll("[data-color]").forEach(
+//     item => {
+//         item.addEventListener("click", e => {
+//             document.querySelector("[data-color].active").classList.toggle("active");
+//             item.classList.toggle("active");
+
+//             let color = item.getAttribute("data-color");
+//             paint.selectedColor = color;
+
+//             document.querySelectorAll(".toolbox .group.linewidths .item .linewidth").forEach(
+//                 item => {
+//                     item.style.backgroundColor = color;
+//                 }
+//             );
+//         });
+//     }
+// );
+
+$(document).ready( () => {
+    $("#brushSize").change( () => {
+        $(".canvas-cursor").css({
+            "width": $("#brushSize").val() + "px",
+            "height": $("#brushSize").val() + "px",
         });
-    }
-);
-
-document.querySelectorAll("[data-color]").forEach(
-    item => {
-        item.addEventListener("click", e => {
-            document.querySelector("[data-color].active").classList.toggle("active");
-            item.classList.toggle("active");
-
-            let color = item.getAttribute("data-color");
-            paint.selectedColor = color;
-
-            document.querySelectorAll(".toolbox .group.linewidths .item .linewidth").forEach(
-                item => {
-                        item.style.backgroundColor = color;
-                    }
-            );
+        paint.lineWidth = $("#brushSize").val();
+    })
+    $(window).mousemove( (e) => {
+        if (e.target.id != "canvas") {
+            $(".canvas-cursor").css({
+                "top": "-1000px",
+                "left": "-1000px",
+            });
+            return;
+        }
+        $(".canvas-cursor").css({
+            "width": $("#brushSize").val() + "px",
+            "height": $("#brushSize").val() + "px",
+            "top": e.pageY + "px",
+            "left": e.pageX + "px",
         });
-    }
-);
+    });
+});
+
+// let mouseCursor = document.querySelector(".canvas-cursor");
+// let brushSize = document.getElementById("brushSize");
+// mouseCursor.style.width = brushSize.value + 'px';
+// mouseCursor.style.height = brushSize.value + 'px';
+
+// window.addEventListener("mousemove", cursor);
+
+// function cursor(e) {
+//     mouseCursor.style.top = e.pageY + 'px';
+//     mouseCursor.style.left = e.pageX + 'px';
+// }
+
+// window.addEventListener("change", sizef);
+// function sizef(e) {
+//     mouseCursor.style.width = brushSize.value + 'px';
+//     mouseCursor.style.height = brushSize.value + 'px';
+// }
+$("[type='number']").keypress(function (evt) {
+    evt.preventDefault();
+});

@@ -1,0 +1,76 @@
+.toolbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    padding: 4px;
+    display: flex;
+    background-color: white;
+}
+
+.toolbox .group {
+    display: flex;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.toolbox .group .item {
+    margin: 4px;
+    padding: 4px;
+    text-align: center;
+    transition: all .3s;
+    cursor: pointer;
+    border: solid black 1px;
+    border-radius: 12%;
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.toolbox .group .item.active {
+    transform: scale(1.1);
+    box-shadow: 0 0 6px rgba(33, 33, 33,.6);
+}
+
+.toolbox .group .item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 6px rgba(33, 33, 33,.6);
+}
+
+.toolbox .group .item img {
+    width: 32px;
+    height: 32px;
+}
+
+.toolbox .group .item2 {
+    margin: 4px;
+    padding: 4px;
+    margin-top: 6px;
+    text-align: center;
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.toolbox .group .item2 input {
+    height: 32px;
+}
+
+label {
+    margin: 0;
+}
+
+.group-separator {
+    margin-left: 4px;
+    margin-right: 4px;
+    border-left: solid black 1px;
+}
+
+.canvas-cursor {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    border: solid black 2px;
+    border-radius: 50%;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
