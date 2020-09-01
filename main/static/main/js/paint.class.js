@@ -1,6 +1,4 @@
-import Point from './point.model.js';
 import { TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER } from './tool.js';
-import Fill from './fill.class.js';
 import getMouseCoordsOnCanvas from './utils.js'
 
 export default class Paint {
@@ -14,11 +12,6 @@ export default class Paint {
         this.undoLimit = 10;
 
         console.log("Paint constructed, canvasId =", canvasId);
-
-        // this.tool = TOOL_BRUSH;
-        // this._lineWidth = 15;
-        // this.color = '#7F7F7F';
-        // this.init();
     }
 
     set activeTool(tool) {
@@ -45,6 +38,32 @@ export default class Paint {
         // console.log("===================================\n");
     }
 
+    saveContextDict() {
+        let props = ['strokeStyle', 'fillStyle', 'globalAlpha', 'lineWidth',
+            'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset', 'shadowOffsetX',
+            'shadowOffsetY', 'shadowBlur', 'shadowColor', 'globalCompositeOperation',
+            'font', 'textAlign', 'textBaseline', 'direction', 'imageSmoothingEnabled'];
+        let state = {}
+        for (let prop of props) {
+            state[prop] = this.context[prop];
+        }
+
+        return state;
+    }
+
+    restoreContextDict(state) {
+        for (let prop in state) {
+            this.context[prop] = state[prop];
+        }
+    }
+
+    resizeCanvas(width, height) {
+        let state = this.saveContextDict();
+        this.context.canvas.width = width || canvas.width;
+        this.context.canvas.height = height || canvas.height;
+        this.restoreContextDict(state);
+    }
+
     onMouseDown(e) {
         this.addImageToStack();
 
@@ -63,17 +82,14 @@ export default class Paint {
             // this.context.strokeStyle = this.color;
 
             this.context.beginPath();
-            this.context.arc(this.startPos.x, this.startPos.y, this.context.lineWidth/2, 0, 2 * Math.PI);
+            this.context.arc(this.startPos.x, this.startPos.y, this.context.lineWidth / 2, 0, 2 * Math.PI);
             this.context.fillStyle = this.color;
             this.context.fill();
 
             this.context.beginPath();
-            this.context.moveTo(this.startPos.x, this.startPos.y);            
+            this.context.moveTo(this.startPos.x, this.startPos.y);
             this.context.strokeStyle = this.color;
 
-        } else if (this.tool == TOOL_PAINT_BUCKET) {
-            // console.log("onMouseDown, TOOL_PAINT_BUCKET branch");
-            new Fill(this.canvas, this.startPos, this.color);
         } else if (this.tool == TOOL_ERASER) {
             this.context.clearRect(
                 this.startPos.x, this.startPos.y,
@@ -138,9 +154,9 @@ export default class Paint {
             this.context.putImageData(latestImage, 0, 0);
             this.undoStack.pop();
         }
-        // else {
-        //     alert("undoStack empty");
-        // }
+        else {
+            console.log("undoStack empty");
+        }
     }
 
     saveImage() {

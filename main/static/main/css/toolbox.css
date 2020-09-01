@@ -63,14 +63,3 @@ label {
     margin-right: 4px;
     border-left: solid black 1px;
 }
-
-.canvas-cursor {
-    position: absolute;
-    top: -1000px;
-    left: -1000px;
-    border: solid black 2px;
-    border-radius: 50%;
-    z-index: 20;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-}
