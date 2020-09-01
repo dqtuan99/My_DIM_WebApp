@@ -1,4 +1,4 @@
-import { TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER } from './tool.js';
+import { TOOL_BRUSH } from './tool.js';
 import Paint from './paint.class.js';
 
 let paint = new Paint('canvas');

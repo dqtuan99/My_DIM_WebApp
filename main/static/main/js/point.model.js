@@ -1,4 +1,4 @@
-const CURSOR_OFFSET = 8;
+export const CURSOR_OFFSET = 8;
 
 export default class Point {
     constructor(x, y) {

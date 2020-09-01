@@ -1,4 +1,4 @@
-import { TOOL_BRUSH, TOOL_PAINT_BUCKET, TOOL_ERASER } from './tool.js';
+import { TOOL_BRUSH, TOOL_ERASER } from './tool.js';
 import getMouseCoordsOnCanvas from './utils.js'
 
 export default class Paint {
@@ -9,6 +9,7 @@ export default class Paint {
         this.context.lineCap = 'round';
 
         this.undoStack = [];
+        this.redoStack = [];
         this.undoLimit = 10;
 
         console.log("Paint constructed, canvasId =", canvasId);
@@ -65,22 +66,18 @@ export default class Paint {
     }
 
     onMouseDown(e) {
-        this.addImageToStack();
+        let currentCanvas = this.getCurrentCanvas();
+        this.undoStack.push(currentCanvas);
 
         this.canvas.onmousemove = e => this.onMouseMove(e);
         document.onmouseup = e => this.onMouseUp(e);
 
         this.startPos = getMouseCoordsOnCanvas(e, this.canvas);
-        console.log("\n===================================");
-        console.log("onMouseDown, this.startPos =", this.startPos);
-        console.log("onMouseDown, this.tool =", this.tool);
-        console.log("===================================\n");
+        // console.log("\n===================================");
+        // console.log("onMouseDown, this.startPos =", this.startPos);
+        // console.log("onMouseDown, this.tool =", this.tool);
+        // console.log("===================================\n");
         if (this.tool == TOOL_BRUSH) {
-            // console.log("onMouseDown, TOOL_BRUSH branch");
-            // this.context.beginPath();
-            // this.context.moveTo(this.startPos.x, this.startPos.y);            
-            // this.context.strokeStyle = this.color;
-
             this.context.beginPath();
             this.context.arc(this.startPos.x, this.startPos.y, this.context.lineWidth / 2, 0, 2 * Math.PI);
             this.context.fillStyle = this.color;
@@ -91,9 +88,7 @@ export default class Paint {
             this.context.strokeStyle = this.color;
 
         } else if (this.tool == TOOL_ERASER) {
-            this.context.clearRect(
-                this.startPos.x, this.startPos.y,
-                this._lineWidth, this._lineWidth);
+            this.clearCircle(this.startPos.x, this.startPos.y);
         }
     }
 
@@ -107,10 +102,7 @@ export default class Paint {
             // console.log("onMouseMove, TOOL_BRUSH branch");        
             this.drawFreeLine(this._lineWidth);
         } else if (this.tool == TOOL_ERASER) {
-            // console.log("onMouseMove, not TOOL_BRUSH branch");
-            this.context.clearRect(
-                this.currentPos.x, this.currentPos.y,
-                this._lineWidth, this._lineWidth);
+            this.clearCircle(this.currentPos.x, this.currentPos.y);
         }
     }
 
@@ -132,8 +124,18 @@ export default class Paint {
         // console.log("===================================\n");
     }
 
-    addImageToStack() {
-        this.savedData = this.context.getImageData(
+    clearCircle(x, y) {
+        let radius = this.context.lineWidth / 2;
+        this.context.save();
+        this.context.beginPath();
+        this.context.arc(x, y, radius, 0, 2 * Math.PI, true);
+        this.context.clip();
+        this.context.clearRect(x - radius, y - radius, radius * 2, radius * 2);
+        this.context.restore();
+    }
+
+    getCurrentCanvas() {
+        let currentCanvas = this.context.getImageData(
             0,
             0,
             this.canvas.clientWidth,
@@ -142,20 +144,41 @@ export default class Paint {
         if (this.undoStack.length >= this.undoLimit) {
             this.undoStack.shift();
         }
-        this.undoStack.push(this.savedData);
+        // console.log("undoStack length =", this.undoStack.length);
+        // console.log(this.undoStack);
+
+        return currentCanvas;
     }
 
     undoPaint() {
         if (this.undoStack.length > 0) {
-            let latestImage = this.undoStack[this.undoStack.length - 1];
-            console.log("latestImage = ", latestImage);
-            this.canvas.width = latestImage.width;
-            this.canvas.height = latestImage.height;
+            let currentCanvas = this.getCurrentCanvas();
+            this.redoStack.push(currentCanvas);
+            let latestImage = this.undoStack.pop();
             this.context.putImageData(latestImage, 0, 0);
-            this.undoStack.pop();
+            // console.log("undoStack length =", this.undoStack.length);
+            // console.log(this.undoStack);
+            // console.log("redoStack length =", this.redoStack.length);
+            // console.log(this.redoStack);
         }
         else {
             console.log("undoStack empty");
+        }
+    }
+
+    redoPaint() {
+        if (this.redoStack.length > 0) {
+            let currentCanvas = this.getCurrentCanvas();
+            this.undoStack.push(currentCanvas);
+            let latestImage = this.redoStack.pop();
+            this.context.putImageData(latestImage, 0, 0);
+            // console.log("undoStack length =", this.undoStack.length);
+            // console.log(this.undoStack);
+            // console.log("redoStack length =", this.redoStack.length);
+            // console.log(this.redoStack);
+        }
+        else {
+            console.log("redoStack empty");
         }
     }
 
