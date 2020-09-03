@@ -182,6 +182,10 @@ export default class Paint {
         }
     }
 
+    clearCanvas() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
     saveImage() {
         let image = this.canvas.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
         let link = document.createElement("a");

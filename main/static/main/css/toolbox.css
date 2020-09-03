@@ -26,13 +26,8 @@
     min-height: 64px;
 }
 
-.toolbox .group .item.active {
-    transform: scale(1.1);
-    box-shadow: 0 0 6px rgba(33, 33, 33,.6);
-}
-
-.toolbox .group .item:hover {
-    transform: scale(1.1);
+.toolbox .group .item:hover, .toolbox .group .item.active {
+    transform: scale(1.05);
     box-shadow: 0 0 6px rgba(33, 33, 33,.6);
 }
 
