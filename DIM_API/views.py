@@ -1,4 +1,5 @@
 import os
+import base64
 import cv2
 import numpy as np
 
@@ -49,5 +50,18 @@ class BackgroundPredictor(APIView):
             return Response('OK', status=status.HTTP_200_OK)
         else:
             return Response('Failed', status=status.HTTP_400_BAD_REQUEST)
-            
+
+
+class Test(APIView):
+    
+    def post(self, request, *args, **kwargs):
+        prefix = 'data:image/png;base64,'
+        b64_string = request.data['canvas'][len(prefix):]
+        b64_string += "=" * ((4 - len(b64_string) % 4) % 4) # fix base64 decode incorrect padding
+        img = base64.b64decode(b64_string)
+        npimg = np.fromstring(img, dtype=np.uint8)
+        source = cv2.imdecode(npimg, cv2.IMREAD_GRAYSCALE)
+        cv2.imshow('a', source)
+        cv2.waitKey(0)
+        return Response(request.data, status=status.HTTP_200_OK)
 
