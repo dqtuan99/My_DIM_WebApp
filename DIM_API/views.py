@@ -65,3 +65,11 @@ class Test(APIView):
         cv2.waitKey(0)
         return Response(request.data, status=status.HTTP_200_OK)
 
+
+class BackgroundPredictor2(APIView):
+
+    def post(self, request, *args, **kwargs):
+
+
+        return Response('OK', status.HTTP_200_OK)
+

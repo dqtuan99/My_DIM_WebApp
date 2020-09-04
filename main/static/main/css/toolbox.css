@@ -14,7 +14,11 @@
     padding-right: 4px;
 }
 
-.toolbox .group .item {
+.toolbox .group .item:not(.clickable) {
+    opacity: 0.5;
+}
+
+.toolbox .group .item, .toolbox .group .item.clickable {
     margin: 4px;
     padding: 4px;
     text-align: center;
@@ -26,9 +30,14 @@
     min-height: 64px;
 }
 
-.toolbox .group .item:hover, .toolbox .group .item.active {
+.toolbox .group .item.clickable:hover, .toolbox .group .item.clickable.active {
     transform: scale(1.05);
     box-shadow: 0 0 6px rgba(33, 33, 33,.6);
+}
+
+.toolbox .group .item.clickable:active {
+    box-shadow: 0 0 2px rgba(33, 33, 33,.6);
+    transform: translateY(2px);
 }
 
 .toolbox .group .item img {

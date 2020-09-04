@@ -10,7 +10,7 @@ export default class Paint {
 
         this.undoStack = [];
         this.redoStack = [];
-        this.undoLimit = 10;
+        this.undoLimit = 20;
 
         console.log("Paint constructed, canvasId =", canvasId);
     }
@@ -63,11 +63,16 @@ export default class Paint {
         this.context.canvas.width = width || canvas.width;
         this.context.canvas.height = height || canvas.height;
         this.restoreContextDict(state);
+        this.undoStack = [];
+        this.redoStack = [];
     }
 
     onMouseDown(e) {
-        let currentCanvas = this.getCurrentCanvas();
-        this.undoStack.push(currentCanvas);
+        if(e.which == 3) {
+            return;
+        }
+
+        this.undoStack.push(this.getCurrentCanvas());
 
         this.canvas.onmousemove = e => this.onMouseMove(e);
         document.onmouseup = e => this.onMouseUp(e);
@@ -152,8 +157,7 @@ export default class Paint {
 
     undoPaint() {
         if (this.undoStack.length > 0) {
-            let currentCanvas = this.getCurrentCanvas();
-            this.redoStack.push(currentCanvas);
+            this.redoStack.push(this.getCurrentCanvas());
             let latestImage = this.undoStack.pop();
             this.context.putImageData(latestImage, 0, 0);
             // console.log("undoStack length =", this.undoStack.length);
@@ -168,8 +172,7 @@ export default class Paint {
 
     redoPaint() {
         if (this.redoStack.length > 0) {
-            let currentCanvas = this.getCurrentCanvas();
-            this.undoStack.push(currentCanvas);
+            this.undoStack.push(this.getCurrentCanvas());
             let latestImage = this.redoStack.pop();
             this.context.putImageData(latestImage, 0, 0);
             // console.log("undoStack length =", this.undoStack.length);
@@ -182,15 +185,19 @@ export default class Paint {
         }
     }
 
-    clearCanvas() {
+    clearCanvas() {        
+        this.undoStack = [];
+        this.redoStack = [];
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    saveImage() {
-        let image = this.canvas.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");
-        let link = document.createElement("a");
-        link.download = "my-image.png";
-        link.href = image;
-        link.click();
+    getCanvasDataURL() {
+        let image = this.canvas.toDataURL("image/png", 1.0)
+
+        return image;
+        // let link = document.createElement("a");
+        // link.download = "my-image.png";
+        // link.href = image;
+        // link.click();
     }
 }

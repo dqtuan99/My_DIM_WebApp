@@ -25,13 +25,13 @@
 
     <div class="container" id="draggable">
         <canvas id="canvas" width="640" height="480"></canvas>
-        <img id="canvas-background">
+        <img id="canvas-background" src="">
     </div>
 
     <div class="canvas-cursor"></div>
     <div class="toolbox">
         <div class="group command">
-            <div class="item">
+            <div class="item clickable">
                 <label for="imageLoader" style="cursor: pointer; margin: -1px;">
                     <img src="{% static 'main/image/upload.svg' %}" alt="">
                     <br />Upload
@@ -50,15 +50,15 @@
         </div>
         <div class="group-separator"></div>
         <div class="group tool">
-            <div class="item" data-tool="dragger">
+            <div class="item clickable" data-tool="dragger">
                 <img src="{% static 'main/image/dragger.svg' %}" alt="">
                 <br />Dragger
             </div>
-            <div class="item active" data-tool="brush">
+            <div class="item clickable active" data-tool="brush">
                 <img src="{% static 'main/image/brush.svg' %}" alt="">
                 <br />Brush
             </div>
-            <div class="item" data-tool="eraser">
+            <div class="item clickable" data-tool="eraser">
                 <img src="{% static 'main/image/eraser.svg' %}" alt="">
                 <br />Eraser
             </div>
@@ -71,7 +71,7 @@
         <div class="group result">
             <div class="item" data-result="restart">
                 <img src="{% static 'main/image/restart.svg' %}" alt="">
-                <br />Clear all
+                <br />Restart
             </div>
             <div class="item" data-result="predict">
                 <img src="{% static 'main/image/predict.svg' %}" alt="">
