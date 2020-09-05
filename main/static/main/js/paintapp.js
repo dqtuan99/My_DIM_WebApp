@@ -91,7 +91,11 @@ $(document).ready(() => {
             })
         })
         .then(response => response.json())
-        .then(result => console.log(result))
+        .then(result => {
+            // console.log(result);
+            canvas_background.attr('src', result);
+            paint.clearCanvas();
+        })
         .catch(error => console.log(error));
     });
 

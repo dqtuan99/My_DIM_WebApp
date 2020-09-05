@@ -39,7 +39,7 @@ def pred_trimap(img, trimap, model, device):
     pred_numpy_reshape[trimap==255] = 1.0
 
     out = (pred_numpy_reshape.copy() * 255).astype(np.uint8)
-
+    
     return out, pred_numpy_reshape
 
 def pred_pre_trimap(img, pre_trimap, model, device):
@@ -57,3 +57,9 @@ def extract_foreground(img, scale):
     foreground = img * scale[:, :, None]
     
     return foreground.astype(np.uint8)
+
+def transparent_background_output(extracted_img, output_trimap):
+    output_trimap_expand = np.expand_dims(output_trimap, 2)
+    transparent_out = np.concatenate([extracted_img, output_trimap_expand], axis=2)
+
+    return transparent_out

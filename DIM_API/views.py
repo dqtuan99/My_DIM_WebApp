@@ -2,10 +2,11 @@ import os
 import base64
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from DIM_API.apps import DimApiConfig
 from DIM_API.serializers import InputImageSerializer
-from DIM_API.DIM_Model.api import pred_pre_trimap, pred_trimap, extract_foreground
+from DIM_API.DIM_Model.api import pred_pre_trimap, extract_foreground, transparent_background_output
 
 from django.conf import settings
 from rest_framework import status
@@ -71,15 +72,15 @@ class BackgroundPredictor2(APIView):
         device = DimApiConfig.device
 
         output_trimap, scale = pred_pre_trimap(input_image, input_trimap, model, device)
-        output_image = extract_foreground(input_image, scale)
+        extracted_image = extract_foreground(input_image, scale)
+        output_image = transparent_background_output(extracted_image, output_trimap)
+        
+        _, output_image_bytes = cv2.imencode('.png', output_image)
+        output_image_bytes = output_image_bytes.tobytes()
+        output_image_bytes = base64.b64encode(output_image_bytes)
+        output_image_bytes = b'data:image/png;base64,' + output_image_bytes
 
-        _, output_image = cv2.imencode('.png', output_image)
-        print(_)
-        output_image = output_image.tobytes()
-        output_image = base64.b64encode(output_image)
-        output_image = b'data:image/png;base64,' + output_image
-
-        return Response(output_image, status=status.HTTP_200_OK)
+        return Response(output_image_bytes, status=status.HTTP_200_OK)
 
     def b64_to_opencv(self, b64_string, imread_mode):
         b64_string += '=' * ((4-len(b64_string) % 4) % 4)
