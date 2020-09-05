@@ -68,7 +68,7 @@ export default class Paint {
     }
 
     onMouseDown(e) {
-        if(e.which == 3) {
+        if (e.which == 3) {
             return;
         }
 
@@ -156,39 +156,43 @@ export default class Paint {
     }
 
     undoPaint() {
-        if (this.undoStack.length > 0) {
-            this.redoStack.push(this.getCurrentCanvas());
-            let latestImage = this.undoStack.pop();
-            this.context.putImageData(latestImage, 0, 0);
-            // console.log("undoStack length =", this.undoStack.length);
-            // console.log(this.undoStack);
-            // console.log("redoStack length =", this.redoStack.length);
-            // console.log(this.redoStack);
+        if (this.undoStack.length <= 0) {
+            return;
         }
-        else {
-            console.log("undoStack empty");
-        }
+        this.redoStack.push(this.getCurrentCanvas());
+        let latestImage = this.undoStack.pop();
+        this.context.putImageData(latestImage, 0, 0);
+        // console.log("undoStack length =", this.undoStack.length);
+        // console.log(this.undoStack);
+        // console.log("redoStack length =", this.redoStack.length);
+        // console.log(this.redoStack);
     }
 
     redoPaint() {
-        if (this.redoStack.length > 0) {
-            this.undoStack.push(this.getCurrentCanvas());
-            let latestImage = this.redoStack.pop();
-            this.context.putImageData(latestImage, 0, 0);
-            // console.log("undoStack length =", this.undoStack.length);
-            // console.log(this.undoStack);
-            // console.log("redoStack length =", this.redoStack.length);
-            // console.log(this.redoStack);
+        if (this.redoStack.length <= 0) {
+            return;
         }
-        else {
-            console.log("redoStack empty");
-        }
+        this.undoStack.push(this.getCurrentCanvas());
+        let latestImage = this.redoStack.pop();
+        this.context.putImageData(latestImage, 0, 0);
+        // console.log("undoStack length =", this.undoStack.length);
+        // console.log(this.undoStack);
+        // console.log("redoStack length =", this.redoStack.length);
+        // console.log(this.redoStack);
     }
 
-    clearCanvas() {        
+    clearCanvas() {
         this.undoStack = [];
         this.redoStack = [];
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    isBlankCanvas() {
+        const pixelBuffer = new Uint32Array(
+            this.context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+        );
+    
+        return !pixelBuffer.some(color => color !== 0);
     }
 
     getCanvasDataURL() {
