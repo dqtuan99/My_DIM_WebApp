@@ -22,6 +22,7 @@ let toolbox_tool_brushSize = $('#brushSize');
 let toolbox_result_predict = $('[data-result="predict"]');
 
 let defaultCanvasPosition = draggable.position();
+let canvasBgBase64 = '';
 
 $(document).ready(() => {
 
@@ -36,7 +37,6 @@ $(document).ready(() => {
 
     activeDraggableDiv(false);
 
-    let canvasBgBase64 = '';
     imageLoader.change((e) => {
         let reader = new FileReader();
         reader.onload = (event) => {
@@ -50,7 +50,6 @@ $(document).ready(() => {
             canvas_background.attr('src', img.src);
         }
         reader.readAsDataURL(e.target.files[0]);
-        toolbox_result_predict.addClass('clickable');
     });
 
     toolbox_command_undo.click(() => {
@@ -77,7 +76,7 @@ $(document).ready(() => {
     });
 
     toolbox_result_predict.click(() => {
-        if (canvas_background.attr('src') == "") {
+        if (canvas_background.attr('src') == '' || paint.isBlankCanvas()) {
             return;
         }
         fetch('http://127.0.0.1:8000/API/predict-bg2/', {
@@ -91,8 +90,9 @@ $(document).ready(() => {
                 'input_trimap': paint.getCanvasDataURL(),
             })
         })
-        .then(res => res.json())
-        .then(res => console.log(res));
+        .then(response => response.json())
+        .then(result => console.log(result))
+        .catch(error => console.log(error));
     });
 
     $('[type="number"]').keypress((e) => {
@@ -112,6 +112,7 @@ $(document).click(() => {
     activeClickableGUI(toolbox_command_undo, paint.undoStack.length != 0);
     activeClickableGUI(toolbox_command_redo, paint.redoStack.length != 0);
     activeClickableGUI(toolbox_command_restart, !(paint.isBlankCanvas() && defaultCanvasPosition.top == draggable.position().top && defaultCanvasPosition.left == draggable.position().left));
+    activeClickableGUI(toolbox_result_predict, !(canvas_background.attr('src') == '' || paint.isBlankCanvas()))
 });
 $(document).keypress(() => {
     activeClickableGUI(toolbox_command_undo, paint.undoStack.length != 0);
@@ -192,7 +193,7 @@ function activeClickableGUI(query, activeCondition) {
     }
 }
 
-function restartCanvas() {    
+function restartCanvas() {
     toolbox_command_restart.removeClass('clickable');
     draggable.css({
         'top': defaultCanvasPosition.top + 'px',

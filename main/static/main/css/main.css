@@ -14,9 +14,9 @@ body {
 #draggable {
     border: solid red 1px;
     position: relative;
-    height: 90vh;
-    min-width: 90vw;
-    top: 50px;
+    height: 95vh;
+    min-width: 95vw;
+    top: 30px;
     cursor: move;
 }
 
