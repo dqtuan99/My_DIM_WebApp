@@ -13,16 +13,17 @@ let draggable = $('#draggable');
 let imageLoader = $('#imageLoader');
 let canvas_background = $('#canvas-background');
 
-let toolbox_command_undo = $('[data-command="undo"]');
-let toolbox_command_redo = $('[data-command="redo"]');
-let toolbox_command_restart = $('[data-result="restart"]');
-
-let toolbox_tool_brushSize = $('#brushSize');
-
-let toolbox_result_predict = $('[data-result="predict"]');
+let tools = $('[data-tool]');
+let command_undo = $('[data-command="undo"]');
+let command_redo = $('[data-command="redo"]');
+let command_restart = $('[data-result="restart"]');
+let brush_size = $('#brushSize');
+let predict = $('[data-result="predict"]');
+let download = $('[data-result="download"]');
 
 let defaultCanvasPosition = draggable.position();
 let canvasBgBase64 = '';
+let finalResult = '';
 
 $(document).ready(() => {
 
@@ -31,7 +32,7 @@ $(document).ready(() => {
         scroll: false,
         disabled: true,
         start: (e, ui) => {
-            toolbox_command_restart.addClass('clickable');
+            command_restart.addClass('clickable');
         }
     });
 
@@ -52,14 +53,23 @@ $(document).ready(() => {
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    toolbox_command_undo.click(() => {
+    command_undo.click(() => {
+        if (!isClickable(command_undo)) {
+            return;
+        }
         paint.undoPaint();
     });
-    toolbox_command_redo.click(() => {
+    command_redo.click(() => {
+        if (!isClickable(command_redo)) {
+            return;
+        }
         paint.redoPaint();
     });
 
-    $('[data-tool]').click((e) => {
+    tools.click((e) => {
+        if (!isClickable($(e.currentTarget))) {
+            return;
+        }
         $('[data-tool].active').removeClass('active');
         $(e.currentTarget).addClass('active');
         let selectedTool = e.currentTarget.getAttribute('data-tool');
@@ -71,12 +81,18 @@ $(document).ready(() => {
         }
     });
 
-    toolbox_command_restart.click(() => {
+    command_restart.click(() => {
+        if (!isClickable(command_restart)) {
+            return;
+        }
+        if (paint.isFinished) {
+            canvas_background.attr('src', canvasBgBase64);
+        }
         restartCanvas();
     });
 
-    toolbox_result_predict.click(() => {
-        if (canvas_background.attr('src') == '' || paint.isBlankCanvas()) {
+    predict.click(() => {
+        if (!isClickable(predict)) {
             return;
         }
         fetch('http://127.0.0.1:8000/API/predict-bg2/', {
@@ -93,34 +109,56 @@ $(document).ready(() => {
         .then(response => response.json())
         .then(result => {
             // console.log(result);
+            finalResult = result;
             canvas_background.attr('src', result);
             paint.clearCanvas();
+            paint.finishedDrawing = true;
+            tools.each((idx, elm) => {
+                activeClickableGUI($(elm), finalResult == '');
+            });
+            activeClickableGUI(download, finalResult != '');
+            activeClickableGUI(predict, false);
+            activeClickableGUI(command_undo, false);
+            activeClickableGUI(command_redo, false);
         })
         .catch(error => console.log(error));
+    });
+
+    download.click(() => {
+        let link = document.createElement("a");
+        link.download = "my-image.png";
+        link.href = finalResult;
+        link.click();
     });
 
     $('[type="number"]').keypress((e) => {
         e.preventDefault();
     });
-    toolbox_tool_brushSize.change(() => {
+    brush_size.change(() => {
         canvasCursor.css({
-            'width': toolbox_tool_brushSize.val() + 'px',
-            'height': toolbox_tool_brushSize.val() + 'px',
+            'width': brush_size.val() + 'px',
+            'height': brush_size.val() + 'px',
         });
-        paint.lineWidth = toolbox_tool_brushSize.val();
+        paint.lineWidth = brush_size.val();
     });
 
 });
 
 $(document).click(() => {
-    activeClickableGUI(toolbox_command_undo, paint.undoStack.length != 0);
-    activeClickableGUI(toolbox_command_redo, paint.redoStack.length != 0);
-    activeClickableGUI(toolbox_command_restart, !(paint.isBlankCanvas() && defaultCanvasPosition.top == draggable.position().top && defaultCanvasPosition.left == draggable.position().left));
-    activeClickableGUI(toolbox_result_predict, !(canvas_background.attr('src') == '' || paint.isBlankCanvas()))
+    if (paint.isFinished) {
+        return;
+    }
+    activeClickableGUI(command_undo, paint.undoStack.length != 0);
+    activeClickableGUI(command_redo, paint.redoStack.length != 0);
+    activeClickableGUI(command_restart, !(paint.isBlankCanvas() && defaultCanvasPosition.top == draggable.position().top && defaultCanvasPosition.left == draggable.position().left));
+    activeClickableGUI(predict, !(canvas_background.attr('src') == '' || paint.isBlankCanvas()));
 });
 $(document).keypress(() => {
-    activeClickableGUI(toolbox_command_undo, paint.undoStack.length != 0);
-    activeClickableGUI(toolbox_command_redo, paint.redoStack.length != 0);
+    if (paint.isFinished) {
+        return;
+    }
+    activeClickableGUI(command_undo, paint.undoStack.length != 0);
+    activeClickableGUI(command_redo, paint.redoStack.length != 0);
 });
 $(document).bind('keypress', (e) => {
     // console.log(e.which);
@@ -132,7 +170,6 @@ $(document).bind('keypress', (e) => {
         paint.redoPaint();
     }
 });
-
 $(document).mousemove((e) => {
     if (paint.tool == TOOL_DRAGGER) {
         return;
@@ -149,8 +186,8 @@ $(document).mousemove((e) => {
         return;
     }
     canvasCursor.css({
-        'width': toolbox_tool_brushSize.val() + 'px',
-        'height': toolbox_tool_brushSize.val() + 'px',
+        'width': brush_size.val() + 'px',
+        'height': brush_size.val() + 'px',
         'top': e.pageY + 'px',
         'left': e.pageX + 'px',
     });
@@ -189,6 +226,14 @@ function activeDraggableDiv(isDraggable) {
     }
 }
 
+function isClickable(query) {
+    if (query.attr('class').split(' ').includes('clickable')) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function activeClickableGUI(query, activeCondition) {
     if (activeCondition) {
         query.addClass('clickable');
@@ -198,10 +243,15 @@ function activeClickableGUI(query, activeCondition) {
 }
 
 function restartCanvas() {
-    toolbox_command_restart.removeClass('clickable');
+    command_restart.removeClass('clickable');
     draggable.css({
         'top': defaultCanvasPosition.top + 'px',
         'left': defaultCanvasPosition.left + 'px',
     });
     paint.clearCanvas();
+    finalResult = '';
+    tools.each((idx, elm) => {
+        activeClickableGUI($(elm), true);
+    });
+    activeClickableGUI(download, true);
 }

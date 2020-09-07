@@ -12,6 +12,8 @@ export default class Paint {
         this.redoStack = [];
         this.undoLimit = 20;
 
+        this.isFinished = false;
+
         console.log("Paint constructed, canvasId =", canvasId);
     }
 
@@ -30,6 +32,10 @@ export default class Paint {
         this.color = color;
         this.context.strokeStyle = this.color;
         console.log("Paint set selectedColor, this.color =", this.color);
+    }
+
+    set finishedDrawing(isFinished) {
+        this.isFinished = isFinished;
     }
 
     init() {
@@ -68,7 +74,7 @@ export default class Paint {
     }
 
     onMouseDown(e) {
-        if (e.which == 3) {
+        if (e.which == 3 || this.isFinished) {
             return;
         }
 
@@ -185,6 +191,7 @@ export default class Paint {
         this.undoStack = [];
         this.redoStack = [];
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.isFinished = false;
     }
 
     isBlankCanvas() {
@@ -196,7 +203,7 @@ export default class Paint {
     }
 
     getCanvasDataURL() {
-        let image = this.canvas.toDataURL("image/png", 1.0)
+        let image = this.canvas.toDataURL("image/png", 1.0);
 
         return image;
         // let link = document.createElement("a");
