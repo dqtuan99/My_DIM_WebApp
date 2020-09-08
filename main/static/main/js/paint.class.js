@@ -235,14 +235,18 @@ Paint.CanvasBackground = class _ {
     }
 
     setScale(max_w, max_h) {
-        if (this.origin_w >= this.origin_h) {
-            if (this.origin_w > max_w) {
-                this.scale = this.origin_w / max_w;
-            }
-        } else {
-            if (this.origin_h > max_h) {
-                this.scale = this.origin_h / max_h;
-            }
+        this.scale = 1.0;
+        let resized = false;
+        if (this.origin_w > max_w) {
+            var w_scale = this.origin_w / max_w;
+            resized = true;
+        }
+        if (this.origin_h > max_h) {
+            var h_scale = this.origin_h / max_h;
+            resized = true;
+        }
+        if (resized) {
+            this.scale = w_scale > h_scale ? w_scale : h_scale;
         }
     }
 }

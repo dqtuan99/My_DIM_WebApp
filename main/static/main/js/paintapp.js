@@ -13,6 +13,7 @@ let draggable = $('#draggable');
 let imageLoader = $('#imageLoader');
 
 let loading = $('.loading-animation');
+loading.hide();
 
 let tools = $('[data-tool]');
 let undo = $('[data-command="undo"]');
@@ -24,8 +25,10 @@ let download = $('[data-result="download"]');
 
 let defaultCanvasPosition = draggable.position();
 
-let MAX_WIDTH = Math.floor($(window).width() * 0.7);
-let MAX_HEIGHT = Math.floor($(window).height() * 0.7);
+let MAX_WIDTH = screen.availWidth * 0.7;
+let MAX_HEIGHT = screen.availHeight * 0.7;
+console.log(MAX_WIDTH);
+console.log(MAX_HEIGHT);
 
 $(document).ready(() => {
     loading.hide();
@@ -46,9 +49,12 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
+                console.log(img.width, img.height);
                 paint.canvas_bg.setOriginSize(img.width, img.height);
                 paint.canvas_bg.setScale(MAX_WIDTH, MAX_HEIGHT);
                 paint.canvas_bg.scaleDownImg(img.width, img.height);
+                console.log(paint.canvas_bg.scale);
+                console.log(paint.canvas_bg.query.css('width'), paint.canvas_bg.query.css('height'));
                 paint.resizeCanvas(img.width, img.height);
                 restartCanvas();
             }
@@ -101,6 +107,8 @@ $(document).ready(() => {
         if (!isClickable(predict)) {
             return;
         }
+        loading.show();
+
         fetch('http://127.0.0.1:8000/API/predict-bg2/', {
             method: 'post',
             headers: {
@@ -127,8 +135,11 @@ $(document).ready(() => {
             activeClickableGUI(predict, false);
             activeClickableGUI(undo, false);
             activeClickableGUI(redo, false);
+
+            loading.hide();
         })
         .catch(error => console.log(error));
+
     });
 
     download.click(() => {
