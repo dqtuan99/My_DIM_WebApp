@@ -16,7 +16,7 @@ body {
     position: relative;
     height: 95vh;
     min-width: 95vw;
-    top: 30px;
+    top: 40px;
     cursor: move;
     z-index: 0;
 }

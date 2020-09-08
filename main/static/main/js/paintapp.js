@@ -1,7 +1,7 @@
 import { TOOL_BRUSH, TOOL_DRAGGER } from './tool.js';
 import Paint from './paint.class.js';
 
-let paint = new Paint('canvas');
+let paint = new Paint('canvas', '#canvas-background');
 paint.activeTool = TOOL_BRUSH;
 paint.lineWidth = 25;
 paint.selectedColor = '#7F7F7F';
@@ -11,28 +11,31 @@ let canvasCursor = $('.canvas-cursor');
 
 let draggable = $('#draggable');
 let imageLoader = $('#imageLoader');
-let canvas_background = $('#canvas-background');
+
+let loading = $('.loading-animation');
 
 let tools = $('[data-tool]');
-let command_undo = $('[data-command="undo"]');
-let command_redo = $('[data-command="redo"]');
-let command_restart = $('[data-result="restart"]');
+let undo = $('[data-command="undo"]');
+let redo = $('[data-command="redo"]');
+let restart = $('[data-result="restart"]');
 let brush_size = $('#brushSize');
 let predict = $('[data-result="predict"]');
 let download = $('[data-result="download"]');
 
 let defaultCanvasPosition = draggable.position();
-let canvasBgBase64 = '';
-let finalResult = '';
+
+let MAX_WIDTH = Math.floor($(window).width() * 0.7);
+let MAX_HEIGHT = Math.floor($(window).height() * 0.7);
 
 $(document).ready(() => {
+    loading.hide();
 
     draggable.draggable({
         cancel: '#canvas',
         scroll: false,
         disabled: true,
         start: (e, ui) => {
-            command_restart.addClass('clickable');
+            restart.addClass('clickable');
         }
     });
 
@@ -43,24 +46,27 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
+                paint.canvas_bg.setOriginSize(img.width, img.height);
+                paint.canvas_bg.setScale(MAX_WIDTH, MAX_HEIGHT);
+                paint.canvas_bg.scaleDownImg(img.width, img.height);
                 paint.resizeCanvas(img.width, img.height);
                 restartCanvas();
             }
             img.src = event.target.result;
-            canvasBgBase64 = event.target.result;
-            canvas_background.attr('src', img.src);
+            paint.canvas_bg.input_img = img.src;
+            paint.canvas_bg.setImgSource(img.src);
         }
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    command_undo.click(() => {
-        if (!isClickable(command_undo)) {
+    undo.click(() => {
+        if (!isClickable(undo)) {
             return;
         }
         paint.undoPaint();
     });
-    command_redo.click(() => {
-        if (!isClickable(command_redo)) {
+    redo.click(() => {
+        if (!isClickable(redo)) {
             return;
         }
         paint.redoPaint();
@@ -81,12 +87,12 @@ $(document).ready(() => {
         }
     });
 
-    command_restart.click(() => {
-        if (!isClickable(command_restart)) {
+    restart.click(() => {
+        if (!isClickable(restart)) {
             return;
         }
         if (paint.isFinished) {
-            canvas_background.attr('src', canvasBgBase64);
+            paint.canvas_bg.setImgSource(paint.canvas_bg.input_img);
         }
         restartCanvas();
     });
@@ -102,24 +108,25 @@ $(document).ready(() => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                'input_image': canvasBgBase64,
+                'input_image': paint.canvas_bg.input_img,
                 'input_trimap': paint.getCanvasDataURL(),
             })
         })
         .then(response => response.json())
         .then(result => {
             // console.log(result);
-            finalResult = result;
-            canvas_background.attr('src', result);
+            paint.canvas_bg.bg_extracted_img = result;
+            paint.canvas_bg.setImgSource(result);
             paint.clearCanvas();
             paint.finishedDrawing = true;
+
             tools.each((idx, elm) => {
-                activeClickableGUI($(elm), finalResult == '');
+                activeClickableGUI($(elm), false);
             });
-            activeClickableGUI(download, finalResult != '');
+            activeClickableGUI(download, true);
             activeClickableGUI(predict, false);
-            activeClickableGUI(command_undo, false);
-            activeClickableGUI(command_redo, false);
+            activeClickableGUI(undo, false);
+            activeClickableGUI(redo, false);
         })
         .catch(error => console.log(error));
     });
@@ -127,7 +134,7 @@ $(document).ready(() => {
     download.click(() => {
         let link = document.createElement("a");
         link.download = "my-image.png";
-        link.href = finalResult;
+        link.href = paint.canvas_bg.bg_extracted_img;
         link.click();
     });
 
@@ -148,17 +155,17 @@ $(document).click(() => {
     if (paint.isFinished) {
         return;
     }
-    activeClickableGUI(command_undo, paint.undoStack.length != 0);
-    activeClickableGUI(command_redo, paint.redoStack.length != 0);
-    activeClickableGUI(command_restart, !(paint.isBlankCanvas() && defaultCanvasPosition.top == draggable.position().top && defaultCanvasPosition.left == draggable.position().left));
-    activeClickableGUI(predict, !(canvas_background.attr('src') == '' || paint.isBlankCanvas()));
+    activeClickableGUI(undo, paint.undoStack.length != 0);
+    activeClickableGUI(redo, paint.redoStack.length != 0);
+    activeClickableGUI(restart, !(paint.isBlankCanvas() && defaultCanvasPosition.top == draggable.position().top && defaultCanvasPosition.left == draggable.position().left));
+    activeClickableGUI(predict, !(paint.canvas_bg.src == '' || paint.isBlankCanvas()));
 });
 $(document).keypress(() => {
     if (paint.isFinished) {
         return;
     }
-    activeClickableGUI(command_undo, paint.undoStack.length != 0);
-    activeClickableGUI(command_redo, paint.redoStack.length != 0);
+    activeClickableGUI(undo, paint.undoStack.length != 0);
+    activeClickableGUI(redo, paint.redoStack.length != 0);
 });
 $(document).bind('keypress', (e) => {
     // console.log(e.which);
@@ -243,15 +250,16 @@ function activeClickableGUI(query, activeCondition) {
 }
 
 function restartCanvas() {
-    command_restart.removeClass('clickable');
     draggable.css({
         'top': defaultCanvasPosition.top + 'px',
         'left': defaultCanvasPosition.left + 'px',
     });
-    paint.clearCanvas();
-    finalResult = '';
+    activeClickableGUI(restart, false);
     tools.each((idx, elm) => {
         activeClickableGUI($(elm), true);
     });
-    activeClickableGUI(download, true);
+    activeClickableGUI(download, false);
+
+    paint.canvas_bg.bg_extracted_img = '';
+    paint.clearCanvas();
 }

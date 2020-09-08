@@ -2,36 +2,34 @@ import { TOOL_BRUSH, TOOL_ERASER } from './tool.js';
 import getMouseCoordsOnCanvas from './utils.js'
 
 export default class Paint {
-    constructor(canvasId) {
+    
+    constructor(canvasId, canvasBgId) {
         this.canvas = document.getElementById(canvasId);
-        this.context = canvas.getContext("2d");
+        this.context = canvas.getContext('2d');
         this.context.lineJoin = 'round';
         this.context.lineCap = 'round';
+
+        this.canvas_bg = new Paint.CanvasBackground(canvasBgId);
 
         this.undoStack = [];
         this.redoStack = [];
         this.undoLimit = 20;
 
         this.isFinished = false;
-
-        console.log("Paint constructed, canvasId =", canvasId);
     }
 
     set activeTool(tool) {
         this.tool = tool;
-        console.log("Paint set activeTool, this.tool =", this.tool);
     }
 
     set lineWidth(lineWidth) {
         this._lineWidth = lineWidth;
         this.context.lineWidth = this._lineWidth;
-        console.log("Paint set lineWidth, this._lineWidth =", this._lineWidth);
     }
 
     set selectedColor(color) {
         this.color = color;
         this.context.strokeStyle = this.color;
-        console.log("Paint set selectedColor, this.color =", this.color);
     }
 
     set finishedDrawing(isFinished) {
@@ -40,9 +38,6 @@ export default class Paint {
 
     init() {
         this.canvas.onmousedown = e => this.onMouseDown(e);
-        // console.log("\n===================================");
-        // console.log("Paint mouse listener init");
-        // console.log("===================================\n");
     }
 
     saveContextDict() {
@@ -65,9 +60,10 @@ export default class Paint {
     }
 
     resizeCanvas(width, height) {
+        let scale = this.canvas_bg.scale;
         let state = this.saveContextDict();
-        this.context.canvas.width = width || canvas.width;
-        this.context.canvas.height = height || canvas.height;
+        this.context.canvas.width = width / scale;
+        this.context.canvas.height = height / scale;
         this.restoreContextDict(state);
         this.undoStack = [];
         this.redoStack = [];
@@ -84,10 +80,6 @@ export default class Paint {
         document.onmouseup = e => this.onMouseUp(e);
 
         this.startPos = getMouseCoordsOnCanvas(e, this.canvas);
-        // console.log("\n===================================");
-        // console.log("onMouseDown, this.startPos =", this.startPos);
-        // console.log("onMouseDown, this.tool =", this.tool);
-        // console.log("===================================\n");
         if (this.tool == TOOL_BRUSH) {
             this.context.beginPath();
             this.context.arc(this.startPos.x, this.startPos.y, this.context.lineWidth / 2, 0, 2 * Math.PI);
@@ -105,12 +97,7 @@ export default class Paint {
 
     onMouseMove(e) {
         this.currentPos = getMouseCoordsOnCanvas(e, this.canvas);
-        // console.log("\n===================================");
-        // console.log("onMouseMove, this.currentPos =", this.currentPos, this);
-        // console.log("onMouseMove, this.tool =", this.tool);
-        // console.log("===================================\n");
-        if (this.tool == TOOL_BRUSH) {
-            // console.log("onMouseMove, TOOL_BRUSH branch");        
+        if (this.tool == TOOL_BRUSH) {     
             this.drawFreeLine(this._lineWidth);
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.currentPos.x, this.currentPos.y);
@@ -120,19 +107,12 @@ export default class Paint {
     onMouseUp(e) {
         this.canvas.onmousemove = null;
         document.onmouseup = null;
-        // console.log("\n===================================");
-        // console.log("onMouseUp, this.canvas.onmousemove =", this.canvas.onmousemove);
-        // console.log("onMouseUp, document.onmouseup =", document.onmouseup);
-        // console.log("===================================\n");
     }
 
     drawFreeLine(lineWidth) {
         this.context.lineWidth = lineWidth;
         this.context.lineTo(this.currentPos.x, this.currentPos.y);
         this.context.stroke();
-        // console.log("\n===================================");
-        // console.log("drawFreeLine, lineTo(", this.currentPos.x, ",", this.currentPos.y);
-        // console.log("===================================\n");
     }
 
     clearCircle(x, y) {
@@ -155,8 +135,6 @@ export default class Paint {
         if (this.undoStack.length >= this.undoLimit) {
             this.undoStack.shift();
         }
-        // console.log("undoStack length =", this.undoStack.length);
-        // console.log(this.undoStack);
 
         return currentCanvas;
     }
@@ -168,10 +146,6 @@ export default class Paint {
         this.redoStack.push(this.getCurrentCanvas());
         let latestImage = this.undoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
-        // console.log("undoStack length =", this.undoStack.length);
-        // console.log(this.undoStack);
-        // console.log("redoStack length =", this.redoStack.length);
-        // console.log(this.redoStack);
     }
 
     redoPaint() {
@@ -181,10 +155,6 @@ export default class Paint {
         this.undoStack.push(this.getCurrentCanvas());
         let latestImage = this.redoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
-        // console.log("undoStack length =", this.undoStack.length);
-        // console.log(this.undoStack);
-        // console.log("redoStack length =", this.redoStack.length);
-        // console.log(this.redoStack);
     }
 
     clearCanvas() {
@@ -203,12 +173,76 @@ export default class Paint {
     }
 
     getCanvasDataURL() {
-        let image = this.canvas.toDataURL("image/png", 1.0);
+        let w = this.canvas_bg.origin_w;
+        let h = this.canvas_bg.origin_h;
+        let scaledUpCanvas = document.createElement('canvas');
+        scaledUpCanvas.width = w;
+        scaledUpCanvas.height = h;
+        let scaledUpContext = scaledUpCanvas.getContext('2d');
+        scaledUpContext.drawImage(this.canvas, 0, 0, w, h);
+        let image = scaledUpCanvas.toDataURL("image/png", 1.0);
 
         return image;
-        // let link = document.createElement("a");
-        // link.download = "my-image.png";
-        // link.href = image;
-        // link.click();
+    }
+
+}
+
+Paint.CanvasBackground = class _ {
+
+    constructor(canvasBgId) {
+        this.query = $(canvasBgId);
+        this.input_img_b64 = '';
+        this.bg_extracted_img_b64 = '';
+        this.current_src = this.query.attr('src');
+        this.scale = 1.0;
+    }
+
+    get input_img() {
+        return this.input_img_b64;
+    }
+
+    set input_img(input_img) {
+        this.input_img_b64 = input_img;
+    }
+
+    get bg_extracted_img() {
+        return this.bg_extracted_img_b64;
+    }
+
+    set bg_extracted_img(bg_extracted_img) {
+        this.bg_extracted_img_b64 = bg_extracted_img;
+    }
+
+    get src() {
+        return this.current_src;
+    }
+
+    setOriginSize(w, h) {
+        this.origin_w = w;
+        this.origin_h = h;
+    }
+
+    setImgSource(src) {
+        this.current_src = src;
+        this.query.attr('src', src);
+    }
+
+    scaleDownImg(origin_w, origin_h) {  
+        this.query.css({            
+            'width': origin_w / this.scale + 'px',
+            'height': origin_h / this.scale + 'px',  
+        });
+    }
+
+    setScale(max_w, max_h) {
+        if (this.origin_w >= this.origin_h) {
+            if (this.origin_w > max_w) {
+                this.scale = this.origin_w / max_w;
+            }
+        } else {
+            if (this.origin_h > max_h) {
+                this.scale = this.origin_h / max_h;
+            }
+        }
     }
 }
