@@ -4,11 +4,12 @@ import torch
 
 from DIM_API.DIM_Model.api import pred_pre_trimap, extract_foreground
 from DIM_API.DIM_Model.models_v16_4 import DIMModel
+from DIM_API.DIM_Model.config import device
 
 checkpoint_name = 'checkpoint.pt'
 
-devices = ['cpu', 'cuda']
-device = devices[0]
+# devices = ['cpu', 'cuda']
+# device = devices[0]
 
 module_folder = 'DIM_Model'
 

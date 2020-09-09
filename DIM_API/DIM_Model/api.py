@@ -32,7 +32,7 @@ def pred_trimap(img, trimap, model, device):
         x = x.type(torch.FloatTensor).to(device)
         pred = model(x)
 
-        pred_numpy = pred.cpu().numpy()
+        pred_numpy = pred.to(device).numpy()
     pred_numpy_reshape = pred_numpy.reshape((h, w))
 
     pred_numpy_reshape[trimap==0] = 0.0

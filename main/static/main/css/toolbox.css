@@ -3,9 +3,9 @@
     top: 0;
     left: 0;
     margin: 5px;
-    padding: 4px;
     display: flex;
     background-color: white;
+    border-radius: 10px;
 }
 
 .toolbox .group {
@@ -19,7 +19,7 @@
 }
 
 .toolbox .group .item, .toolbox .group .item.clickable {
-    margin: 4px;
+    margin: 8px;
     padding: 4px;
     text-align: center;
     transition: all .3s;
@@ -28,6 +28,18 @@
     border-radius: 12%;
     min-width: 64px;
     min-height: 64px;
+}
+
+.toolbox .group .item2 {
+    padding: 8px;
+    margin-top: 6px;
+    text-align: center;
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.toolbox .group .item2 input {
+    height: 32px;
 }
 
 .toolbox .group .item.clickable:hover, .toolbox .group .item.clickable.active {
@@ -45,17 +57,11 @@
     height: 32px;
 }
 
-.toolbox .group .item2 {
-    margin: 4px;
-    padding: 4px;
-    margin-top: 6px;
-    text-align: center;
-    min-width: 64px;
-    min-height: 64px;
-}
-
-.toolbox .group .item2 input {
+.toolbox .group .item .swatch {
+    width: 32px;
     height: 32px;
+    border-radius: 50%;
+    margin: 0 auto;
 }
 
 label {
@@ -65,5 +71,5 @@ label {
 .group-separator {
     margin-left: 4px;
     margin-right: 4px;
-    border-left: solid black 1px;
+    border-left: solid #aaa 1px;
 }

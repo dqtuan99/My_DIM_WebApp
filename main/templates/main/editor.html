@@ -56,6 +56,10 @@
                 <img src="{% static 'main/image/grab.svg' %}" alt="">
                 <br />Move
             </div>
+            <div class="item clickable" data-tool="paint-bucket">
+                <img src="{% static 'main/image/paint-bucket.svg' %}" alt="">
+                <br />Bucket
+            </div>
             <div class="item clickable active" data-tool="brush">
                 <img src="{% static 'main/image/brush.svg' %}" alt="">
                 <br />Brush
@@ -67,6 +71,17 @@
             <div class="item2">
                 <input type="number" id="brushSize" name="brush-size" min="15" max="60" step="5" value="25">
                 <br />Brush size
+            </div>
+        </div>
+        <div class="group-separator"></div>
+        <div class="group color">
+            <div class="item clickable active" data-color="#808080">
+                <div class="swatch" style="background-color: #808080"></div>
+                Unsure
+            </div>
+            <div class="item clickable" data-color="#37d61a">
+                <div class="swatch" style="background-color: #37d61a"></div>
+                Certain
             </div>
         </div>
         <div class="group-separator"></div>

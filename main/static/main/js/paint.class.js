@@ -1,5 +1,6 @@
-import { TOOL_BRUSH, TOOL_ERASER } from './tool.js';
+import { TOOL_PAINT_BUCKET ,TOOL_BRUSH, TOOL_ERASER } from './tool.js';
 import getMouseCoordsOnCanvas from './utils.js'
+import Fill from './fill.class.js';
 
 export default class Paint {
     
@@ -76,7 +77,9 @@ export default class Paint {
 
         this.undoStack.push(this.getCurrentCanvas());
 
-        this.canvas.onmousemove = e => this.onMouseMove(e);
+        if (this.tool != TOOL_PAINT_BUCKET) {
+            this.canvas.onmousemove = e => this.onMouseMove(e);
+        }
         document.onmouseup = e => this.onMouseUp(e);
 
         this.startPos = getMouseCoordsOnCanvas(e, this.canvas);
@@ -92,6 +95,9 @@ export default class Paint {
 
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.startPos.x, this.startPos.y);
+        } else if (this.tool == TOOL_PAINT_BUCKET) {
+            // new Fill(this.canvas, this.startPos, {r:127,g:252,b:3});
+            new Fill(this.canvas, this.startPos, this.color);
         }
     }
 

@@ -1,10 +1,11 @@
-import { TOOL_BRUSH, TOOL_DRAGGER } from './tool.js';
+import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_PAINT_BUCKET } from './tool.js';
+import { COLOR_CERTAIN, COLOR_UNCERTAIN } from './tool.js';
 import Paint from './paint.class.js';
 
 let paint = new Paint('canvas', '#canvas-background');
 paint.activeTool = TOOL_BRUSH;
 paint.lineWidth = 25;
-paint.selectedColor = '#7F7F7F';
+paint.selectedColor = COLOR_UNCERTAIN;
 paint.init();
 
 let canvasCursor = $('.canvas-cursor');
@@ -27,8 +28,7 @@ let defaultCanvasPosition = draggable.position();
 
 let MAX_WIDTH = screen.availWidth * 0.7;
 let MAX_HEIGHT = screen.availHeight * 0.7;
-console.log(MAX_WIDTH);
-console.log(MAX_HEIGHT);
+let current_brush_size = paint._lineWidth;
 
 $(document).ready(() => {
     loading.hide();
@@ -49,12 +49,9 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
-                console.log(img.width, img.height);
                 paint.canvas_bg.setOriginSize(img.width, img.height);
                 paint.canvas_bg.setScale(MAX_WIDTH, MAX_HEIGHT);
                 paint.canvas_bg.scaleDownImg(img.width, img.height);
-                console.log(paint.canvas_bg.scale);
-                console.log(paint.canvas_bg.query.css('width'), paint.canvas_bg.query.css('height'));
                 paint.resizeCanvas(img.width, img.height);
                 restartCanvas();
             }
@@ -88,8 +85,18 @@ $(document).ready(() => {
         paint.activeTool = selectedTool;
         if (selectedTool == TOOL_DRAGGER) {
             activeDraggableDiv(true);
+            brush_size.prop('disabled', true);
+        } else if (selectedTool == TOOL_PAINT_BUCKET) {
+            activeDraggableDiv(false);
+            brush_size.prop('disabled', true);
+            $('#canvas').css({
+                'cursor': 'url("static/main/image/paint-bucket-cursor.svg") 0 25, auto',
+            });
+            current_brush_size = 10;
         } else {
             activeDraggableDiv(false);
+            brush_size.prop('disabled', false);
+            current_brush_size = paint._lineWidth;
         }
     });
 
@@ -120,25 +127,25 @@ $(document).ready(() => {
                 'input_trimap': paint.getCanvasDataURL(),
             })
         })
-        .then(response => response.json())
-        .then(result => {
-            // console.log(result);
-            paint.canvas_bg.bg_extracted_img = result;
-            paint.canvas_bg.setImgSource(result);
-            paint.clearCanvas();
-            paint.finishedDrawing = true;
+            .then(response => response.json())
+            .then(result => {
+                // console.log(result);
+                paint.canvas_bg.bg_extracted_img = result;
+                paint.canvas_bg.setImgSource(result);
+                paint.clearCanvas();
+                paint.finishedDrawing = true;
 
-            tools.each((idx, elm) => {
-                activeClickableGUI($(elm), false);
-            });
-            activeClickableGUI(download, true);
-            activeClickableGUI(predict, false);
-            activeClickableGUI(undo, false);
-            activeClickableGUI(redo, false);
+                tools.each((idx, elm) => {
+                    activeClickableGUI($(elm), false);
+                });
+                activeClickableGUI(download, true);
+                activeClickableGUI(predict, false);
+                activeClickableGUI(undo, false);
+                activeClickableGUI(redo, false);
 
-            loading.hide();
-        })
-        .catch(error => console.log(error));
+                loading.hide();
+            })
+            .catch(error => console.log(error));
 
     });
 
@@ -152,12 +159,18 @@ $(document).ready(() => {
     $('[type="number"]').keypress((e) => {
         e.preventDefault();
     });
+    // $('[type="number"]').keydown((e) => {
+    //     if (e.which === 38 || e.which === 40) {
+    //         e.preventDefault();
+    //     }
+    // });
     brush_size.change(() => {
+        current_brush_size = brush_size.val();
         canvasCursor.css({
-            'width': brush_size.val() + 'px',
-            'height': brush_size.val() + 'px',
+            'width': current_brush_size + 'px',
+            'height': current_brush_size + 'px',
         });
-        paint.lineWidth = brush_size.val();
+        paint.lineWidth = current_brush_size;
     });
 
 });
@@ -204,8 +217,8 @@ $(document).mousemove((e) => {
         return;
     }
     canvasCursor.css({
-        'width': brush_size.val() + 'px',
-        'height': brush_size.val() + 'px',
+        'width': current_brush_size + 'px',
+        'height': current_brush_size + 'px',
         'top': e.pageY + 'px',
         'left': e.pageX + 'px',
     });
@@ -234,6 +247,16 @@ function activeDraggableDiv(isDraggable) {
         })
     } else {
         draggable.draggable('disable');
+        draggable.mousedown(() => {
+            draggable.css({
+                'cursor': 'default',
+            });
+        })
+        draggable.mouseup(() => {
+            draggable.css({
+                'cursor': 'default',
+            });
+        })
         draggable.css({
             'border': 'none',
             'cursor': 'default',
