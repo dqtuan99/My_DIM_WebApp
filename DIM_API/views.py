@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from DIM_API.apps import DimApiConfig
 from DIM_API.serializers import InputImageSerializer
-from DIM_API.DIM_Model.api import pred_pre_trimap, extract_foreground, transparent_background_output
+from DIM_API.DIM_Model.api import pred_pre_trimap, pred_trimap,extract_foreground, transparent_background_output
 
 from django.conf import settings
 from rest_framework import status

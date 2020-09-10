@@ -17,6 +17,8 @@ let loading = $('.loading-animation');
 loading.hide();
 
 let tools = $('[data-tool]');
+let colors = $('[data-color]');
+
 let undo = $('[data-command="undo"]');
 let redo = $('[data-command="redo"]');
 let restart = $('[data-result="restart"]');
@@ -98,6 +100,19 @@ $(document).ready(() => {
             brush_size.prop('disabled', false);
             current_brush_size = paint._lineWidth;
         }
+    });
+
+    colors.click((e) => {
+        if (!isClickable(colors)) {
+            return;
+        }
+        $('[data-color].active').removeClass('active');
+        $(e.currentTarget).addClass('active');
+        let currentColor = e.currentTarget.getAttribute('data-color');
+        paint.selectedColor = currentColor;
+        canvasCursor.css({
+            'background-color': currentColor,
+        });
     });
 
     restart.click(() => {
