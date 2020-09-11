@@ -43,13 +43,20 @@ def pred_trimap(img, trimap, model, device):
     return out, pred_numpy_reshape
 
 def pred_pre_trimap(img, pre_trimap, model, device):
-    pre_trimap = cv2.cvtColor(pre_trimap, cv2.COLOR_BGR2GRAY)
-    mask = pre_trimap != 0
-    cnts = cv2.findContours(pre_trimap, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    trimap = pre_trimap.copy()
-    cv2.fillPoly(trimap, cnts, 255)
-    trimap[mask] = 128
+    # pre_trimap = cv2.cvtColor(pre_trimap, cv2.COLOR_BGR2GRAY)
+    # mask = pre_trimap != 0
+    # cnts = cv2.findContours(pre_trimap, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    # trimap = pre_trimap.copy()
+    # cv2.fillPoly(trimap, cnts, 255)
+    # trimap[mask] = 128
+    trimap = cv2.cvtColor(pre_trimap, cv2.COLOR_BGR2HSV)
+    green_lowb = (111/2 - 10, 87.9/100*255 - 40, 83.9/100*255 - 40)
+    green_highb = (111/2 + 10, 87.9/100*255 + 40, 83.9/100*255 + 40)
+    mask = cv2.inRange(trimap, green_lowb, green_highb)
+    trimap = cv2.cvtColor(trimap, cv2.COLOR_HSV2BGR)
+    trimap[mask > 0] = (255, 255, 255)
+    trimap = cv2.cvtColor(trimap, cv2.COLOR_BGR2GRAY)
 
     return pred_trimap(img, trimap, model, device)
 

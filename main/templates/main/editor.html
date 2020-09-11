@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Document{% endblock %}</title>
-    
+
     <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/loading.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/toolbox.css' %}">
@@ -23,8 +23,19 @@
 
 <body>
     {% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
 
-    <div class="container" id="draggable">
+            </div>
+            <div class="col">
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="canvas-container" id="draggable">
         <canvas id="canvas" width="640" height="480"></canvas>
         <img id="canvas-background" src="">
     </div>
@@ -41,14 +52,14 @@
                 <input id="imageLoader" type="file" onclick="this.value=null;" type="file" accept=".jpg, .jpeg, .png"
                     style="display: none;" />
             </div>
-            <div class="item" data-command="undo">
+            <!-- <div class="item" data-command="undo">
                 <img src="{% static 'main/image/undo.svg' %}" alt="">
                 <br />Undo
             </div>
             <div class="item" data-command="redo">
                 <img src="{% static 'main/image/redo.svg' %}" alt="">
                 <br />Redo
-            </div>
+            </div> -->
         </div>
         <div class="group-separator"></div>
         <div class="group tool">
@@ -106,7 +117,7 @@
         <div class="circle"></div>
         <div class="circle"></div>
         <div class="circle"></div>
-      </div>
+    </div>
 
     {% endblock %}
 </body>

@@ -1,0 +1,61 @@
+body {
+    margin: 0px;
+    background-color: #edf2ef;
+    overflow: hidden;
+    /* background: url('../image/png-background.jpg'); */
+    background: linear-gradient(rgba(255,255,255,.35), rgba(255,255,255,.35)), url('../image/png-background.jpg');
+    background-repeat: repeat;
+}
+
+.image-upload>input {
+  display: none;
+}
+
+#draggable {
+    border: solid red 1px;
+    position: relative;
+    height: 95vh;
+    width: 95vw;
+    top: 40px;
+    cursor: move;
+    z-index: 0;
+}
+
+#draggable * {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#canvas {
+    border: solid 4px #3f3737;
+    z-index: 2;
+    opacity: 0.5;
+    cursor: none;
+}
+
+#canvas-background {
+    z-index: 1;
+}
+
+.canvas-cursor {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    border: solid black 2px;
+    border-radius: 50%;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background-color: #808080;
+    filter: invert(0.8);
+    opacity: 0.8;
+    mix-blend-mode: difference;
+}
+
+.col {
+    border: solid green 1px;
+    margin: 2px;
+    width: 50vw;
+}
