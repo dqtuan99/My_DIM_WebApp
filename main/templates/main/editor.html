@@ -5,12 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Document{% endblock %}</title>
+    <title>{% block title %}Background Cutter{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/loading.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/toolbox.css' %}">
-    <script type="module" src="{% static 'main/js/paintapp.js' %}" defer></script>
+    <script type="module" src="{% static 'main/js/paint.app.js' %}" defer></script>
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -23,22 +23,28 @@
 
 <body>
     {% block body %}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-
+    <div class="whole-screen">
+        <div class="split-screen left">
+            <div class="containment-area">
+                <div class="drag-area" id="draggable2">
+                    <div class="canvas-area">
+                        <canvas id="canvas" width="640" height="480"></canvas>
+                        <img src="" alt="" id="canvas-background">
+                    </div>
+                </div>
             </div>
-            <div class="col">
+        </div>
+        <div class="sep"></div>
+        <div class="split-screen right">
 
-            </div>
         </div>
     </div>
 
 
-    <div class="canvas-container" id="draggable">
+    <!-- <div class="canvas-container" id="draggable" style="display: none;">
         <canvas id="canvas" width="640" height="480"></canvas>
         <img id="canvas-background" src="">
-    </div>
+    </div> -->
 
     <div class="canvas-cursor"></div>
 
@@ -99,11 +105,11 @@
         <div class="group result">
             <div class="item" data-result="restart">
                 <img src="{% static 'main/image/restart.svg' %}" alt="">
-                <br />Restart
+                <br />Clear all
             </div>
             <div class="item" data-result="predict">
-                <img src="{% static 'main/image/predict.svg' %}" alt="">
-                <br />Predict
+                <img src="{% static 'main/image/cut.svg' %}" alt="">
+                <br />Cut
             </div>
             <div class="item" data-result="download">
                 <img src="{% static 'main/image/download.svg' %}" alt="">
@@ -112,12 +118,12 @@
         </div>
     </div>
 
-    <div class="loading-animation">
+    <!-- <div class="loading-animation">
         <div class="label">Predicting</div>
         <div class="circle"></div>
         <div class="circle"></div>
         <div class="circle"></div>
-    </div>
+    </div> -->
 
     {% endblock %}
 </body>

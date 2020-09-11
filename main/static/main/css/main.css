@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+
+* {    
+    font-family: 'Open Sans', sans-serif;
+}
+
 body {
     margin: 0px;
     background-color: #edf2ef;
@@ -11,32 +17,23 @@ body {
   display: none;
 }
 
-#draggable {
-    border: solid red 1px;
-    position: relative;
-    height: 95vh;
-    width: 95vw;
-    top: 40px;
-    cursor: move;
-    z-index: 0;
-}
-
-#draggable * {
+#canvas {
+    border: solid 4px #3f3737;
+    z-index: 2;
+    opacity: 0.5;
+    cursor: none;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
-#canvas {
-    border: solid 4px #3f3737;
-    z-index: 2;
-    opacity: 0.5;
-    cursor: none;
-}
-
 #canvas-background {
     z-index: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .canvas-cursor {
@@ -52,4 +49,43 @@ body {
     filter: invert(0.8);
     opacity: 0.8;
     mix-blend-mode: difference;
+}
+
+.whole-screen {
+    display: flex;
+}
+
+.split-screen {
+    height: 100vh;
+    width: 50vw;
+    border: solid green 1px;
+    overflow: hidden;
+}
+
+.sep {
+    border-left: solid black 2px;
+}
+
+.containment-area {
+    margin-top: -100vh;
+    margin-left: -125vw;
+    width: 300vw;
+    height: 300vh;
+    position: relative;
+}
+
+.drag-area {
+    top: 50vh;
+    left: 25vw;
+    width: 250vw;
+    height: 200vh;
+}
+
+.canvas-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
 }

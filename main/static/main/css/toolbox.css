@@ -5,7 +5,7 @@
     margin: 5px;
     display: flex;
     background-color: white;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: small;
 }
 
@@ -28,7 +28,7 @@
     transition: all .3s;
     cursor: pointer;
     border: solid gray 2px;
-    border-radius: 12%;
+    border-radius: 24%;
     min-width: 64px;
     min-height: 64px;
 }
