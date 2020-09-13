@@ -244,7 +244,7 @@ $(document).ready(() => {
             return;
         }
         let isOutsideWindow = false;
-        if (e.target.id != 'canvas') {
+        if (e.target.id != 'canvas' && e.target.id != 'canvas2') {
             if (!isOutsideWindow) {
                 $canvasCursor.css({
                     'top': '-1000px',
@@ -262,10 +262,17 @@ $(document).ready(() => {
             'top': e.pageY + 'px',
             'left': e.pageX + 'px',
         });
-        $canvasCursor2.css({
-            'top': e.pageY + 'px',
-            'left': e.pageX + screen.availWidth * 0.5 + 'px',
-        });
+        if (e.target.id == 'canvas') {
+            $canvasCursor2.css({
+                'top': e.pageY + 'px',
+                'left': e.pageX + screen.availWidth * 0.5 + 'px',
+            });
+        } else if (e.target.id == 'canvas2') {
+            $canvasCursor2.css({
+                'top': e.pageY + 'px',
+                'left': e.pageX - screen.availWidth * 0.5 + 'px',
+            });
+        }
         isOutsideWindow = false;
     });
 
