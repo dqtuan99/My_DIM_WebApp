@@ -134,14 +134,31 @@ $(document).ready(() => {
         } else if (selectedTool == TOOL_PAINT_BUCKET) {
             activeDraggableDiv(false);
             $brush_size.prop('disabled', true);
-            $('#canvas').css({
-                'cursor': 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto',
+            $(paint.canvas).mousemove(() => {
+                $(paint.canvas).css('cursor', 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto');
             });
-            $brush_size.val(7);
+            $canvasCursor.css({
+                'width': '10px',
+                'height': '10px',
+            });
+            $canvasCursor2.css({
+                'width': '10px',
+                'height': '10px',
+            });
         } else {
             activeDraggableDiv(false);
             $brush_size.prop('disabled', false);
-            $brush_size.val(paint._lineWidth);
+            $(paint.canvas).mousemove(() => {
+                $(paint.canvas).css('cursor', 'none');
+            });
+            $canvasCursor.css({
+                'width': $brush_size.val() + 'px',
+                'height': $brush_size.val() + 'px',
+            });
+            $canvasCursor2.css({
+                'width': $brush_size.val() + 'px',
+                'height': $brush_size.val() + 'px',
+            });
         }
     });
 
@@ -247,9 +264,11 @@ $(document).ready(() => {
         } else if (e.which == 43) {
             // +
             paint.zoomCanvas(0.05);
+            paint2.zoomCanvas(0.05);
         } else if (e.which == 45) {
             // -
             paint.zoomCanvas(-0.05);
+            paint2.zoomCanvas(-0.05);
         }
     });
 
@@ -358,6 +377,10 @@ $(document).ready(() => {
         paint.canvas_bg.bg_extracted_img = '';
         paint.clearCanvas();
         $draggable.css({
+            'top': defaultCanvasPosition.top + 'px',
+            'left': defaultCanvasPosition.left + 'px'
+        });
+        $draggable2.css({
             'top': defaultCanvasPosition.top + 'px',
             'left': defaultCanvasPosition.left + 'px'
         });

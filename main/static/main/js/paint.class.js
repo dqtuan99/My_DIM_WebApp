@@ -10,8 +10,9 @@ export default class Paint {
 
         this.canvas_bg = new Paint.CanvasBackground(canvasBgId);
 
-        this.ratio = 1.0;
+        this.current_ratio = 1.0;
         this.origin_size = {w: this.canvas.width, h: this.canvas.height};
+        this.upload_scaled_size = {w: this.canvas.width, h: this.canvas.height};
         this.current_size = {w: this.canvas.width, h: this.canvas.height};
     }
 
@@ -72,15 +73,28 @@ export default class Paint {
 
     scaleCanvasAfterUpload(max_size) {
         let upload_scale = this.calculateUploadScale(max_size);
-        this.current_size = {
+        this.upload_scaled_size = {
             w: this.origin_size.w / upload_scale,
             h: this.origin_size.h / upload_scale
         };
+        this.current_size = this.upload_scaled_size;
         this.resizeCanvas(this.current_size);
-        this.canvas_bg.query.css({
-            'width': this.current_size.w,
-            'height': this.current_size.h
-        });
+    }
+
+    zoomCanvas(step) {
+        console.log(this.current_ratio);
+        // if (this.current_ratio <= 0.4) {
+        //     this.current_ratio = 0.4;
+        //     return;
+        // } else if (this.current_ratio >= 2.0) {
+        //     this.current_ratio = 1.95;
+        // }
+        // TODO
+        this.current_ratio += step;
+        let new_w = this.current_ratio * this.upload_scaled_size.w;
+        let new_h = this.current_ratio * this.upload_scaled_size.h;
+        this.current_size = {w: new_w, h: new_h};
+        this.resizeCanvas(this.current_size);
     }
 
     resizeCanvas(resize_size) {
@@ -88,17 +102,10 @@ export default class Paint {
         this.canvas.width = resize_size.w;
         this.canvas.height = resize_size.h;
         restoreContextDict(this.context, state);
-    }
-
-    zoomCanvas(step) {
-        // alert('zoom scale = ' + zoom_scale);
-        // console.log('old:', this.canvas.width, this.canvas.height);
-        // this.ratio = this.ratio + step;
-        // let new_w = this.ratio * this.origin_w;
-        // let new_h = this.ratio * this.origin_h;
-        // console.log(new_w, new_h);
-        // this.resizeCanvas(new_w, new_h);
-        // console.log('new:', this.canvas.width, this.canvas.height);
+        this.canvas_bg.query.css({
+            'width': resize_size.w,
+            'height': resize_size.h
+        });
     }
 
     onMouseDown(e) {
