@@ -35,6 +35,7 @@ $(document).ready(() => {
     paint.init();
 
     let $canvasCursor = $('.canvas-cursor');
+    let $canvasCursor2 = $('.canvas-cursor2');
 
     let $loading = $('.loading-animation');
     $loading.hide();
@@ -85,6 +86,10 @@ $(document).ready(() => {
     activeDraggableDiv(false);
 
     $canvasCursor.css({
+        'width': $brush_size.val() + 'px',
+        'height': $brush_size.val() + 'px',
+    });
+    $canvasCursor2.css({
         'width': $brush_size.val() + 'px',
         'height': $brush_size.val() + 'px',
     });
@@ -140,6 +145,8 @@ $(document).ready(() => {
         $(e.currentTarget).addClass('active');
         let currentColor = e.currentTarget.getAttribute('data-color');
         paint.selectedColor = currentColor;
+        $canvasCursor.css('background-color', currentColor);
+        $canvasCursor2.css('background-color', currentColor);
     });
 
     $restart.click(() => {
@@ -206,6 +213,10 @@ $(document).ready(() => {
             'width': $brush_size.val() + 'px',
             'height': $brush_size.val() + 'px',
         });
+        $canvasCursor2.css({
+            'width': $brush_size.val() + 'px',
+            'height': $brush_size.val() + 'px',
+        });
         paint.lineWidth = $brush_size.val();
     });
 
@@ -239,15 +250,21 @@ $(document).ready(() => {
                     'top': '-1000px',
                     'left': '-1000px',
                 });
+                $canvasCursor2.css({
+                    'top': '-1000px',
+                    'left': '-1000px',
+                });
                 isOutsideWindow = true;
             }
             return;
         }
         $canvasCursor.css({
-            'width': $brush_size.val() + 'px',
-            'height': $brush_size.val() + 'px',
             'top': e.pageY + 'px',
             'left': e.pageX + 'px',
+        });
+        $canvasCursor2.css({
+            'top': e.pageY + 'px',
+            'left': e.pageX + screen.availWidth * 0.5 + 'px',
         });
         isOutsideWindow = false;
     });
