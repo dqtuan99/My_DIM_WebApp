@@ -3,13 +3,15 @@ import { COLOR_UNCERTAIN } from './tool.js';
 import Paint from './paint.class.js';
 
 let paint = new Paint('canvas', '#canvas-background');
+let paint2 = new Paint('canvas2', '#canvas-background2');
+
 let $draggable;
 let $draggable2;
 
 let defaultCanvasPosition;
 
-let MAX_WIDTH = screen.availWidth * 0.7;
-let MAX_HEIGHT = screen.availHeight * 0.7;
+let MAX_WIDTH = $(window).width() * 0.7;
+let MAX_HEIGHT = $(window).height() * 0.7;
 
 $(window).load(() => {
     defaultCanvasPosition = $draggable.position();
@@ -99,15 +101,21 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
-                paint.canvas_bg.setOriginSize(img.width, img.height);
-                paint.canvas_bg.setScale(MAX_WIDTH, MAX_HEIGHT);
-                paint.canvas_bg.scaleDownImg(img.width, img.height);
-                paint.resizeCanvas(img.width, img.height);
+                paint.originSize = {w: img.width, h: img.height};
+                paint.scaleCanvasAfterUpload({w: MAX_WIDTH, h: MAX_HEIGHT});
+
+                paint2.origin_size = paint.origin_size;
+                paint2.scaleCanvasAfterUpload({w: MAX_WIDTH, h: MAX_HEIGHT});
+
                 restartCanvas();
             }
             img.src = event.target.result;
+
             paint.canvas_bg.input_img = img.src;
-            paint.canvas_bg.setImgSource(img.src);
+            paint.canvas_bg.currentSrc = img.src;
+
+            paint2.canvas_bg.input_img = img.src;
+            paint2.canvas_bg.currentSrc = img.src;
         }
         reader.readAsDataURL(e.target.files[0]);
     });
@@ -229,13 +237,19 @@ $(document).ready(() => {
     });
 
     $(document).bind('keypress', (e) => {
-        // console.log(e.which);
+        console.log(e.which);
         if (e.which === 26) {
             // ctrl z
             paint.undoPaint();
         } else if (e.which === 25) {
             // ctrl y
             paint.redoPaint();
+        } else if (e.which == 43) {
+            // +
+            paint.zoomCanvas(0.05);
+        } else if (e.which == 45) {
+            // -
+            paint.zoomCanvas(-0.05);
         }
     });
 
@@ -265,12 +279,12 @@ $(document).ready(() => {
         if (e.target.id == 'canvas') {
             $canvasCursor2.css({
                 'top': e.pageY + 'px',
-                'left': e.pageX + screen.availWidth * 0.5 + 'px',
+                'left': e.pageX + $(window).width() * 0.5 + 'px',
             });
         } else if (e.target.id == 'canvas2') {
             $canvasCursor2.css({
                 'top': e.pageY + 'px',
-                'left': e.pageX - screen.availWidth * 0.5 + 'px',
+                'left': e.pageX - $(window).width() * 0.5 + 'px',
             });
         }
         isOutsideWindow = false;
@@ -279,18 +293,27 @@ $(document).ready(() => {
     function activeDraggableDiv(isDraggable) {
         let $all_draggable_elements = $('#draggable, #draggable2');
         let $all_canvas_elements = $('#canvas, #canvas2');
-        let $both = $('#draggable, #draggable2, #canvas, #canvas2');
         if (isDraggable) {
             $all_draggable_elements.draggable('enable');
-            $both.css('cursor', 'grab');
-            $both.mousedown(() => {
-                $both.css('cursor', 'grabbing');
+
+            $all_draggable_elements.css('cursor', 'grab');
+            $all_draggable_elements.mousedown(() => {
+                $all_draggable_elements.css('cursor', 'grabbing');
             });
-            $both.mouseup(() => {
-                $both.css('cursor', 'grab');
+            $all_draggable_elements.mouseup(() => {
+                $all_draggable_elements.css('cursor', 'grab');
+            });
+
+            $all_canvas_elements.css('cursor', 'grab');
+            $all_canvas_elements.mousedown(() => {
+                $all_canvas_elements.css('cursor', 'grabbing');
+            });
+            $all_canvas_elements.mouseup(() => {
+                $all_canvas_elements.css('cursor', 'grab');
             });
         } else {
             $all_draggable_elements.draggable('disable');
+
             $all_draggable_elements.css('cursor', 'default');
             $all_draggable_elements.mousedown(() => {
                 $all_draggable_elements.css('cursor', 'default');
@@ -298,6 +321,7 @@ $(document).ready(() => {
             $all_draggable_elements.mouseup(() => {
                 $all_draggable_elements.css('cursor', 'default');
             });
+
             $all_canvas_elements.css('cursor', 'none');
             $all_canvas_elements.mousedown(() => {
                 $all_canvas_elements.css('cursor', 'none');

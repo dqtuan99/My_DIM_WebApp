@@ -1,16 +1,25 @@
 import { TOOL_PAINT_BUCKET ,TOOL_BRUSH, TOOL_ERASER } from './tool.js';
-import getMouseCoordsOnCanvas from './utils.js'
+import { getMouseCoordsOnCanvas, saveContextDict, restoreContextDict } from './utils.js'
 import Fill from './fill.class.js';
 
 export default class Paint {
     
     constructor(canvasId, canvasBgId) {
         this.canvas = document.getElementById(canvasId);
-        this.context = canvas.getContext('2d');
-        this.context.lineJoin = 'round';
-        this.context.lineCap = 'round';
+        this.context = this.canvas.getContext('2d');
 
         this.canvas_bg = new Paint.CanvasBackground(canvasBgId);
+
+        this.ratio = 1.0;
+        this.origin_size = {w: this.canvas.width, h: this.canvas.height};
+        this.current_size = {w: this.canvas.width, h: this.canvas.height};
+    }
+
+    init() {
+        this.canvas.onmousedown = e => this.onMouseDown(e);
+
+        this.context.lineJoin = 'round';
+        this.context.lineCap = 'round';
 
         this.undoStack = [];
         this.redoStack = [];
@@ -37,37 +46,59 @@ export default class Paint {
         this.isFinished = isFinished;
     }
 
-    init() {
-        this.canvas.onmousedown = e => this.onMouseDown(e);
+    set originSize(size) {
+        this.origin_size.w = size.w;
+        this.origin_size.h = size.h;
     }
 
-    saveContextDict() {
-        let props = ['strokeStyle', 'fillStyle', 'globalAlpha', 'lineWidth',
-            'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset', 'shadowOffsetX',
-            'shadowOffsetY', 'shadowBlur', 'shadowColor', 'globalCompositeOperation',
-            'font', 'textAlign', 'textBaseline', 'direction', 'imageSmoothingEnabled'];
-        let state = {}
-        for (let prop of props) {
-            state[prop] = this.context[prop];
+    calculateUploadScale(max_size) {
+        let upload_scale = 1.0;
+        let scaled = false;
+        let scale = {w: 1.0, h: 1.0};
+        if (this.origin_size.w > max_size.w) {
+            scale.w = this.origin_size.w / max_size.w;
+            scaled = true;
+        }
+        if (this.origin_size.h > max_size.h) {
+            scale.h = this.origin_size.h / max_size.h;
+            scaled = true;
+        }
+        if (scaled) {
+            upload_scale = scale.w > scale.h ? scale.w : scale.h;
         }
 
-        return state;
+        return upload_scale;
     }
 
-    restoreContextDict(state) {
-        for (let prop in state) {
-            this.context[prop] = state[prop];
-        }
+    scaleCanvasAfterUpload(max_size) {
+        let upload_scale = this.calculateUploadScale(max_size);
+        this.current_size = {
+            w: this.origin_size.w / upload_scale,
+            h: this.origin_size.h / upload_scale
+        };
+        this.resizeCanvas(this.current_size);
+        this.canvas_bg.query.css({
+            'width': this.current_size.w,
+            'height': this.current_size.h
+        });
     }
 
-    resizeCanvas(width, height) {
-        let scale = this.canvas_bg.scale;
-        let state = this.saveContextDict();
-        this.context.canvas.width = width / scale;
-        this.context.canvas.height = height / scale;
-        this.restoreContextDict(state);
-        this.undoStack = [];
-        this.redoStack = [];
+    resizeCanvas(resize_size) {
+        let state = saveContextDict(this.context);
+        this.canvas.width = resize_size.w;
+        this.canvas.height = resize_size.h;
+        restoreContextDict(this.context, state);
+    }
+
+    zoomCanvas(step) {
+        // alert('zoom scale = ' + zoom_scale);
+        // console.log('old:', this.canvas.width, this.canvas.height);
+        // this.ratio = this.ratio + step;
+        // let new_w = this.ratio * this.origin_w;
+        // let new_h = this.ratio * this.origin_h;
+        // console.log(new_w, new_h);
+        // this.resizeCanvas(new_w, new_h);
+        // console.log('new:', this.canvas.width, this.canvas.height);
     }
 
     onMouseDown(e) {
@@ -200,7 +231,6 @@ Paint.CanvasBackground = class _ {
         this.input_img_b64 = '';
         this.bg_extracted_img_b64 = '';
         this.current_src = this.query.attr('src');
-        this.scale = 1.0;
     }
 
     get input_img() {
@@ -223,36 +253,9 @@ Paint.CanvasBackground = class _ {
         return this.current_src;
     }
 
-    setOriginSize(w, h) {
-        this.origin_w = w;
-        this.origin_h = h;
-    }
-
-    setImgSource(src) {
+    set currentSrc(src) {
         this.current_src = src;
         this.query.attr('src', src);
     }
 
-    scaleDownImg(origin_w, origin_h) {  
-        this.query.css({            
-            'width': origin_w / this.scale + 'px',
-            'height': origin_h / this.scale + 'px',  
-        });
-    }
-
-    setScale(max_w, max_h) {
-        this.scale = 1.0;
-        let resized = false;
-        if (this.origin_w > max_w) {
-            var w_scale = this.origin_w / max_w;
-            resized = true;
-        }
-        if (this.origin_h > max_h) {
-            var h_scale = this.origin_h / max_h;
-            resized = true;
-        }
-        if (resized) {
-            this.scale = w_scale > h_scale ? w_scale : h_scale;
-        }
-    }
 }
