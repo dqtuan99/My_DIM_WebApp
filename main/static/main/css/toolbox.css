@@ -5,8 +5,10 @@
     margin: 5px;
     display: flex;
     background-color: white;
+    border: solid grey 1px;
     border-radius: 12px;
     font-size: small;
+    z-index: 20;
 }
 
 .toolbox .group {

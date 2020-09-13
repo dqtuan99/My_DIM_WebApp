@@ -26,17 +26,24 @@
     <div class="whole-screen">
         <div class="split-screen left">
             <div class="containment-area">
-                <div class="drag-area" id="draggable2">
+                <div class="drag-area" id="draggable">
                     <div class="canvas-area">
                         <canvas id="canvas" width="640" height="480"></canvas>
-                        <img src="" alt="" id="canvas-background">
+                        <img id="canvas-background" src="" alt="">
                     </div>
                 </div>
             </div>
         </div>
-        <div class="sep"></div>
+        <div class="split-separator effect8"></div>
         <div class="split-screen right">
-
+            <div class="containment-area">
+                <div class="drag-area" id="draggable2">
+                    <div class="canvas-area">
+                        <canvas id="canvas2" width="640" height="480" style="background-color: white; border: solid grey 4px;">
+                        <img id="canvas-background2" src="" alt="">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -58,14 +65,6 @@
                 <input id="imageLoader" type="file" onclick="this.value=null;" type="file" accept=".jpg, .jpeg, .png"
                     style="display: none;" />
             </div>
-            <!-- <div class="item" data-command="undo">
-                <img src="{% static 'main/image/undo.svg' %}" alt="">
-                <br />Undo
-            </div>
-            <div class="item" data-command="redo">
-                <img src="{% static 'main/image/redo.svg' %}" alt="">
-                <br />Redo
-            </div> -->
         </div>
         <div class="group-separator"></div>
         <div class="group tool">
@@ -105,7 +104,7 @@
         <div class="group result">
             <div class="item" data-result="restart">
                 <img src="{% static 'main/image/restart.svg' %}" alt="">
-                <br />Clear all
+                <br />Restart
             </div>
             <div class="item" data-result="predict">
                 <img src="{% static 'main/image/cut.svg' %}" alt="">

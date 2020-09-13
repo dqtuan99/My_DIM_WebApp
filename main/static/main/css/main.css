@@ -8,16 +8,13 @@ body {
     margin: 0px;
     background-color: #edf2ef;
     overflow: hidden;
-    /* background: url('../image/png-background.jpg'); */
-    background: linear-gradient(rgba(255,255,255,.35), rgba(255,255,255,.35)), url('../image/png-background.jpg');
-    background-repeat: repeat;
 }
 
 .image-upload>input {
   display: none;
 }
 
-#canvas {
+#canvas, #canvas2 {
     border: solid 4px #3f3737;
     z-index: 2;
     opacity: 0.5;
@@ -28,7 +25,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-#canvas-background {
+#canvas-background, #canvas-background2 {
     z-index: 1;
     position: absolute;
     top: 50%;
@@ -58,12 +55,24 @@ body {
 .split-screen {
     height: 100vh;
     width: 50vw;
-    border: solid green 1px;
+    /* border: solid green 1px; */
     overflow: hidden;
 }
 
-.sep {
-    border-left: solid black 2px;
+.split-screen.left {
+    background-color: rgba(214, 202, 202, 0.212);
+}
+
+.split-screen.right {
+    background: linear-gradient(rgba(255,255,255,.4), rgba(255,255,255,.4)), url('../image/png-background.jpg');
+    background-size: 500px 500px;
+    background-repeat: repeat;
+}
+
+.split-separator {
+    background-color: rgba(172, 163, 163, 0.274);
+    width: 5px;
+    z-index: 20;
 }
 
 .containment-area {
@@ -89,3 +98,38 @@ body {
     margin: 0;
     padding: 0;
 }
+
+/*=========================================
+ * Effect 8
+=========================================*/
+.effect8 {
+    position:relative;
+    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+       -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+.effect8:before, .effect8:after {
+    content:"";
+    position:absolute;
+    z-index:-1;
+    -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    top:10px;
+    bottom:10px;
+    left:0;
+    right:0;
+    -moz-border-radius:100px / 10px;
+    border-radius:100px / 10px;
+}
+.effect8:after {
+    right:10px;
+    left:auto;
+    -webkit-transform:skew(8deg) rotate(3deg);
+       -moz-transform:skew(8deg) rotate(3deg);
+        -ms-transform:skew(8deg) rotate(3deg);
+         -o-transform:skew(8deg) rotate(3deg);
+            transform:skew(8deg) rotate(3deg);
+}
+/*=========================================
+=========================================*/
