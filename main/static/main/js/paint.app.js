@@ -85,6 +85,21 @@ $(document).ready(() => {
     $draggable.draggable(draggableOptions);
     $draggable2.draggable(draggable2Options);
 
+    $draggable2.css('cursor', 'grab');
+    $draggable2.mousedown(() => {
+        $draggable.css('cursor', 'grabbing');
+    });
+    $draggable2.mouseup(() => {
+        $draggable.css('cursor', 'grab');
+    });
+    $(paint2.canvas).css('cursor', 'grab');
+    $(paint2.canvas).mousedown(() => {
+        $(paint2.canvas).css('cursor', 'grabbing');
+    });
+    $(paint2.canvas).mouseup(() => {
+        $(paint2.canvas).css('cursor', 'grab');
+    });
+
     activeDraggableDiv(false);
 
     $canvasCursor.css({
@@ -101,11 +116,11 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
-                paint.originSize = {w: img.width, h: img.height};
-                paint.scaleCanvasAfterUpload({w: MAX_WIDTH, h: MAX_HEIGHT});
+                paint.originSize = { w: img.width, h: img.height };
+                paint.scaleCanvasAfterUpload({ w: MAX_WIDTH, h: MAX_HEIGHT });
 
                 paint2.origin_size = paint.origin_size;
-                paint2.scaleCanvasAfterUpload({w: MAX_WIDTH, h: MAX_HEIGHT});
+                paint2.scaleCanvasAfterUpload({ w: MAX_WIDTH, h: MAX_HEIGHT });
 
                 restartCanvas();
             }
@@ -133,8 +148,11 @@ $(document).ready(() => {
             $brush_size.prop('disabled', true);
         } else if (selectedTool == TOOL_PAINT_BUCKET) {
             activeDraggableDiv(false);
+
             $brush_size.prop('disabled', true);
-            $(paint.canvas).mousemove(() => {
+
+            $(paint.canvas).css('cursor', 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto');
+            $(paint.canvas).click(() => {
                 $(paint.canvas).css('cursor', 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto');
             });
             $canvasCursor.css({
@@ -147,8 +165,11 @@ $(document).ready(() => {
             });
         } else {
             activeDraggableDiv(false);
+
             $brush_size.prop('disabled', false);
-            $(paint.canvas).mousemove(() => {
+
+            $(paint.canvas).css('cursor', 'none');
+            $(paint.canvas).click(() => {
                 $(paint.canvas).css('cursor', 'none');
             });
             $canvasCursor.css({
@@ -211,15 +232,15 @@ $(document).ready(() => {
 
                 $tools.each((idx, elm) => {
                     activeClickableGUI($(elm), false);
-                });
+                }); // TODO
                 activeClickableGUI($download, true);
                 activeClickableGUI($predict, false);
 
                 $loading.hide();
             })
             .catch(error => {
+                $loading.hide();
                 alert(error);
-                $loading.hide()
             });
     });
 
@@ -254,21 +275,27 @@ $(document).ready(() => {
     });
 
     $(document).bind('keypress', (e) => {
-        console.log(e.which);
+        // console.log(e.which);
         if (e.which === 26) {
             // ctrl z
             paint.undoPaint();
         } else if (e.which === 25) {
             // ctrl y
             paint.redoPaint();
-        } else if (e.which == 43) {
-            // +
-            paint.zoomCanvas(0.05);
-            paint2.zoomCanvas(0.05);
-        } else if (e.which == 45) {
-            // -
-            paint.zoomCanvas(-0.05);
-            paint2.zoomCanvas(-0.05);
+        }
+    });
+
+    $('#draggable, #draggable2').bind('mousewheel', function (e) {
+        var step = 0.1;
+        if (e.originalEvent.wheelDelta / 120 > 0) {
+            // console.log('left scrolling up !');
+            paint.zoomCanvas(step);
+            paint2.zoomCanvas(step);
+        }
+        else {
+            // console.log('left scrolling down !');
+            paint.zoomCanvas(-step);
+            paint2.zoomCanvas(-step);
         }
     });
 
@@ -277,7 +304,7 @@ $(document).ready(() => {
             return;
         }
         let isOutsideWindow = false;
-        if (e.target.id != 'canvas' && e.target.id != 'canvas2') {
+        if (e.target.id != 'canvas') {
             if (!isOutsideWindow) {
                 $canvasCursor.css({
                     'top': '-1000px',
@@ -300,11 +327,6 @@ $(document).ready(() => {
                 'top': e.pageY + 'px',
                 'left': e.pageX + $(window).width() * 0.5 + 'px',
             });
-        } else if (e.target.id == 'canvas2') {
-            $canvasCursor2.css({
-                'top': e.pageY + 'px',
-                'left': e.pageX - $(window).width() * 0.5 + 'px',
-            });
         }
         isOutsideWindow = false;
     });
@@ -313,40 +335,40 @@ $(document).ready(() => {
         let $all_draggable_elements = $('#draggable, #draggable2');
         let $all_canvas_elements = $('#canvas, #canvas2');
         if (isDraggable) {
-            $all_draggable_elements.draggable('enable');
+            $draggable.draggable('enable');
 
-            $all_draggable_elements.css('cursor', 'grab');
-            $all_draggable_elements.mousedown(() => {
-                $all_draggable_elements.css('cursor', 'grabbing');
+            $draggable.css('cursor', 'grab');
+            $draggable.mousedown(() => {
+                $draggable.css('cursor', 'grabbing');
             });
-            $all_draggable_elements.mouseup(() => {
-                $all_draggable_elements.css('cursor', 'grab');
+            $draggable.mouseup(() => {
+                $draggable.css('cursor', 'grab');
             });
 
-            $all_canvas_elements.css('cursor', 'grab');
-            $all_canvas_elements.mousedown(() => {
-                $all_canvas_elements.css('cursor', 'grabbing');
+            $(paint.canvas).css('cursor', 'grab');
+            $(paint.canvas).mousedown(() => {
+                $(paint.canvas).css('cursor', 'grabbing');
             });
-            $all_canvas_elements.mouseup(() => {
-                $all_canvas_elements.css('cursor', 'grab');
+            $(paint.canvas).mouseup(() => {
+                $(paint.canvas).css('cursor', 'grab');
             });
         } else {
-            $all_draggable_elements.draggable('disable');
+            $draggable.draggable('disable');
 
-            $all_draggable_elements.css('cursor', 'default');
-            $all_draggable_elements.mousedown(() => {
-                $all_draggable_elements.css('cursor', 'default');
+            $draggable.css('cursor', 'default');
+            $draggable.mousedown(() => {
+                $draggable.css('cursor', 'default');
             });
-            $all_draggable_elements.mouseup(() => {
-                $all_draggable_elements.css('cursor', 'default');
+            $draggable.mouseup(() => {
+                $draggable.css('cursor', 'default');
             });
 
-            $all_canvas_elements.css('cursor', 'none');
-            $all_canvas_elements.mousedown(() => {
-                $all_canvas_elements.css('cursor', 'none');
+            $(paint.canvas).css('cursor', 'none');
+            $(paint.canvas).mousedown(() => {
+                $(paint.canvas).css('cursor', 'none');
             });
-            $all_canvas_elements.mouseup(() => {
-                $all_canvas_elements.css('cursor', 'none');
+            $(paint.canvas).mouseup(() => {
+                $(paint.canvas).css('cursor', 'none');
             });
         }
     }
@@ -371,11 +393,12 @@ $(document).ready(() => {
         activeClickableGUI($restart, false);
         $tools.each((idx, elm) => {
             activeClickableGUI($(elm), true);
-        });
+        }); // TODO
         activeClickableGUI($download, false);
 
-        paint.canvas_bg.bg_extracted_img = '';
+        paint.canvas_bg.bg_extracted_img = ''; // TODO
         paint.clearCanvas();
+        paint2.clearCanvas();
         $draggable.css({
             'top': defaultCanvasPosition.top + 'px',
             'left': defaultCanvasPosition.left + 'px'
