@@ -84,7 +84,7 @@ export default class Paint {
         };
         this.current_size = this.upload_scaled_size;
         this.updateCurrentSize();
-        
+
         if (typeof this.temp_canvas != 'undefined') {
             this.temp_canvas.width = this.current_size.w;
             this.temp_canvas.height = this.current_size.h;
@@ -136,8 +136,8 @@ export default class Paint {
         if (this.tool == TOOL_BRUSH) {
             this.context.beginPath();
             this.context.arc(
-                this.startPos.x, 
-                this.startPos.y, 
+                this.startPos.x,
+                this.startPos.y,
                 this.context.lineWidth / 2, 0, 2 * Math.PI
             );
             this.context.fillStyle = this.color;
@@ -149,6 +149,8 @@ export default class Paint {
 
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.startPos.x, this.startPos.y);
+            // this.context.clearRect(this.startPos.x, this.startPos.y, this._lineWidth, this._lineWidth);
+            console.log('eraser start');
         } else if (this.tool == TOOL_PAINT_BUCKET) {
             // new Fill(this.canvas, this.startPos, {r:127,g:252,b:3});
             new Fill(this.canvas, this.startPos, this.color);
@@ -161,15 +163,18 @@ export default class Paint {
             this.drawFreeLine(this._lineWidth);
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.currentPos.x, this.currentPos.y);
+            // this.context.clearRect(this.currentPos.x, this.currentPos.y, this._lineWidth, this._lineWidth);
+            console.log('eraser move');
         }
     }
 
     onMouseUp(e) {
         this.canvas.onmousemove = null;
         document.onmouseup = null;
-
+        console.log('mouse up');
         if (typeof this.temp_canvas != 'undefined') {
-            this.temp_context.drawImage(this.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
+            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+            this.temp_context.drawImage(this.context.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
         }
     }
 
@@ -180,7 +185,7 @@ export default class Paint {
     }
 
     clearCircle(x, y) {
-        let radius = this.context.lineWidth / 2;
+        let radius = this._lineWidth / 2;
         this.context.save();
         this.context.beginPath();
         this.context.arc(x, y, radius, 0, 2 * Math.PI, true);
@@ -222,16 +227,15 @@ export default class Paint {
     }
 
     clearCanvas() {
-        this.undoStack = [];
-        this.redoStack = [];
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.isFinished = false;
+        if (typeof this.temp_canvas != 'undefined') {
+            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+        }
         this.current_ratio = 1.0;
         this.current_size = this.upload_scaled_size;
         this.updateCurrentSize();
-        if (typeof this.temp_canvas != 'undefined'){
-            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
-        }
+        this.undoStack = [];
+        this.redoStack = [];
+        this.isFinished = false;
     }
 
     isBlankCanvas() {
