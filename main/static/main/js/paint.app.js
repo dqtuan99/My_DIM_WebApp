@@ -1,4 +1,4 @@
-import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_PAINT_BUCKET } from './tool.js';
+import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_ERASER, TOOL_PAINT_BUCKET } from './tool.js';
 import { COLOR_UNCERTAIN } from './tool.js';
 import Paint from './paint.class.js';
 import { getMouseCoordsOnCanvas, roundNumber } from './utils.js';
@@ -184,17 +184,28 @@ $(document).ready(() => {
                 'width': $brush_size.val() + 'px',
                 'height': $brush_size.val() + 'px',
             });
+
+            if (selectedTool == TOOL_ERASER) {
+                $canvasCursor.css('background-color', 'transparent');
+                $canvasCursor2.css('background-color', 'transparent');
+            } else if (selectedTool == TOOL_BRUSH) {            
+                $canvasCursor.css('background-color', paint.color);
+                $canvasCursor2.css('background-color', paint.color);
+            }
         }
     });
 
     $colors.click((e) => {
-        if (!isClickable($colors)) {
+        if (!isClickable($(e.currentTarget))) {
             return;
         }
         $('[data-color].active').removeClass('active');
         $(e.currentTarget).addClass('active');
         let currentColor = e.currentTarget.getAttribute('data-color');
         paint.selectedColor = currentColor;
+        if (paint.tool == TOOL_ERASER) {
+            return;
+        }
         $canvasCursor.css('background-color', currentColor);
         $canvasCursor2.css('background-color', currentColor);
     });
@@ -276,6 +287,9 @@ $(document).ready(() => {
         }
         activeClickableGUI($restart, !(paint.isBlankCanvas() && Number($draggable.css('top').split('px')[0]) == defaultCanvasPosition.top && Number($draggable.css('left').split('px')[0]) == defaultCanvasPosition.left));
         activeClickableGUI($predict, !(paint.canvas_bg.src == '' || paint.isBlankCanvas()));
+        $colors.each((idx, elm) => {
+            activeClickableGUI($(elm), paint.tool != TOOL_ERASER);
+        }); 
     });
 
     $(document).bind('keypress', (e) => {

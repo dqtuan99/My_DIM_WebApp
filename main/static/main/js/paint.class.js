@@ -36,6 +36,15 @@ export default class Paint {
 
     set activeTool(tool) {
         this.tool = tool;
+        if (this.tool == TOOL_ERASER) {            
+            this.context.globalCompositeOperation = "destination-out";
+            this.context.fillStyle = "rgba(255,255,255,1)";
+            this.context.strokeStyle = "rgba(255,255,255,1)";
+        } else if (this.tool == TOOL_BRUSH) {            
+            this.context.globalCompositeOperation = "source-over";
+            this.context.fillStyle = this.color;
+            this.context.strokeStyle = this.color;
+        }
     }
 
     set lineWidth(lineWidth) {
@@ -46,6 +55,7 @@ export default class Paint {
     set selectedColor(color) {
         this.color = color;
         this.context.strokeStyle = this.color;
+        this.context.fillStyle = this.color;
     }
 
     set finishedDrawing(isFinished) {
@@ -133,22 +143,18 @@ export default class Paint {
         document.onmouseup = e => this.onMouseUp(e);
 
         this.startPos = getMouseCoordsOnCanvas(e, this.canvas);
-        if (this.tool == TOOL_BRUSH) {
+        if (this.tool == TOOL_BRUSH || this.tool == TOOL_ERASER) {
             this.context.beginPath();
             this.context.arc(
                 this.startPos.x,
                 this.startPos.y,
                 this.context.lineWidth / 2, 0, 2 * Math.PI
             );
-            this.context.fillStyle = this.color;
             this.context.fill();
 
             this.context.beginPath();
             this.context.moveTo(this.startPos.x, this.startPos.y);
-            this.context.strokeStyle = this.color;
 
-        } else if (this.tool == TOOL_ERASER) {
-            this.clearCircle(this.startPos.x, this.startPos.y);
         } else if (this.tool == TOOL_PAINT_BUCKET) {
             new Fill(this.canvas, this.startPos, this.color);
         }
@@ -156,40 +162,38 @@ export default class Paint {
 
     onMouseMove(e) {
         this.currentPos = getMouseCoordsOnCanvas(e, this.canvas);
-        if (this.tool == TOOL_BRUSH) {
-            this.drawFreeLine(this._lineWidth);
-        } else if (this.tool == TOOL_ERASER) {
-            this.clearCircle(this.currentPos.x, this.currentPos.y);
+        if (this.tool == TOOL_BRUSH || this.tool == TOOL_ERASER) {
+            this.drawFreeLine();
         }
     }
 
     onMouseUp(e) {
         this.canvas.onmousemove = null;
         document.onmouseup = null;
-        
+        this.context.closePath();
+
         if (typeof this.temp_canvas != 'undefined') {
             if (this.tool == TOOL_ERASER) {
-                this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+                this.temp_canvas.width = this.temp_canvas.width;
             }
             this.temp_context.drawImage(this.context.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
         }
     }
 
-    drawFreeLine(lineWidth) {
-        this.context.lineWidth = lineWidth;
+    drawFreeLine() {
         this.context.lineTo(this.currentPos.x, this.currentPos.y);
         this.context.stroke();
     }
 
-    clearCircle(x, y) {
-        let radius = this._lineWidth / 2;
-        this.context.save();
-        this.context.beginPath();
-        this.context.arc(x, y, radius, 0, 2 * Math.PI, true);
-        this.context.clip();
-        this.context.clearRect(x - radius, y - radius, radius * 2, radius * 2);
-        this.context.restore();
-    }
+    // clearCircle(x, y) {
+    //     let radius = this._lineWidth / 2;
+    //     this.context.save();
+    //     this.context.beginPath();
+    //     this.context.arc(x, y, radius, 0, 2 * Math.PI, true);
+    //     this.context.clip();
+    //     this.context.clearRect(x - radius, y - radius, radius * 2, radius * 2);
+    //     this.context.restore();
+    // }
 
     getCurrentCanvas() {
         let currentCanvas = this.context.getImageData(
@@ -225,7 +229,7 @@ export default class Paint {
 
     clearCanvas() {
         if (typeof this.temp_canvas != 'undefined') {
-            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+            this.temp_canvas.width = this.temp_canvas.width;
         }
         this.current_ratio = 1.0;
         this.current_size = this.upload_scaled_size;
