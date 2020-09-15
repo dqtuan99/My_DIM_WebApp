@@ -45,6 +45,7 @@
 
 .toolbox .group .item2 input {
     height: 32px;
+    width: 100%;
 }
 
 .toolbox .group .item.clickable:hover, .toolbox .group .item.clickable.active {
@@ -74,7 +75,7 @@ label {
 }
 
 .group-separator {
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 2px;
+    margin-right: 2px;
     border-left: solid #aaa 1px;
 }

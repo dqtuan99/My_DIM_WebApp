@@ -1,6 +1,7 @@
 import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_PAINT_BUCKET } from './tool.js';
 import { COLOR_UNCERTAIN } from './tool.js';
 import Paint from './paint.class.js';
+import { getMouseCoordsOnCanvas, roundNumber } from './utils.js';
 
 let paint = new Paint('canvas', '#canvas-background');
 let paint2 = new Paint('canvas2', '#canvas-background2');
@@ -12,6 +13,9 @@ let defaultCanvasPosition;
 
 let MAX_WIDTH = $(window).width() * 0.7;
 let MAX_HEIGHT = $(window).height() * 0.7;
+
+let translateX = 0;
+let translateY = 0;
 
 $(window).load(() => {
     defaultCanvasPosition = $draggable.position();
@@ -55,10 +59,10 @@ $(document).ready(() => {
 
     let draggableOptions = {
         disabled: true,
-        scrool: false,
+        scroll: false,
         containment: '.left .containment-area',
         start: (e, ui) => {
-            $restart.addClass('clickable');
+            activeClickableGUI($restart, true);
         },
         drag: (e, ui) => {
             $draggable2.css({
@@ -69,10 +73,10 @@ $(document).ready(() => {
     }
     let draggable2Options = {
         disabled: false,
-        scrool: false,
+        scroll: false,
         containment: '.right .containment-area',
         start: (e, ui) => {
-            $restart.addClass('clickable');
+            activeClickableGUI($restart, true);
         },
         drag: (e, ui) => {
             $draggable.css({
@@ -285,8 +289,10 @@ $(document).ready(() => {
         }
     });
 
-    $('#draggable, #draggable2').bind('mousewheel', function (e) {
+    $('#draggable, #draggable2').bind('mousewheel', (e) => {
+        activeClickableGUI($restart, true);
         var step = 0.1;
+        let previous_ratio = paint.current_ratio;
         if (e.originalEvent.wheelDelta / 120 > 0) {
             // console.log('left scrolling up !');
             paint.zoomCanvas(step);
@@ -297,6 +303,63 @@ $(document).ready(() => {
             paint.zoomCanvas(-step);
             paint2.zoomCanvas(-step);
         }
+
+        if (previous_ratio == paint.current_ratio) {
+            return;
+        }
+
+        let current_canvas_pos = getMouseCoordsOnCanvas(e, paint.canvas);
+        let currentX = current_canvas_pos.x;
+        let currentY = current_canvas_pos.y;
+        let originX = paint.canvas.width / 2;
+        let originY = paint.canvas.height / 2;
+
+        let dx = currentX - originX;
+        let dy = currentY - originY;
+
+        let scale = paint.current_ratio / previous_ratio;
+
+        let dy_prime = dy * scale;
+        let dx_prime = dx * scale;
+        let correctionX = dx - dx_prime;
+        let correctionY = dy - dy_prime;
+    
+        let overflowX = 0;
+        let overflowY = 0;
+
+        let afterzoom_pos = {
+            x: $draggable.position().left + correctionX,
+            y: $draggable.position().top + correctionY
+        };
+
+        if (afterzoom_pos.x < 0) {
+            overflowX = afterzoom_pos.x;
+        } else if (afterzoom_pos.x > $(window).width()/2) {
+            overflowX = afterzoom_pos.x - $(window).width()/2;
+        }
+        if (afterzoom_pos.y < 0) {
+            overflowY = afterzoom_pos.y;
+        } else if (afterzoom_pos.y > $(window).height()) {
+            overflowY = afterzoom_pos.y - $(window).height();
+        }
+
+        // console.log('==========================================================');
+        // console.log('afterzoom position =', afterzoom_pos.x, afterzoom_pos.y);
+        // console.log('window size = ',$(window).width()/2, $(window).height()/2);
+        // console.log('overflow = ', overflowX, overflowY);
+
+        correctionX = roundNumber(correctionX - overflowX, 0);
+        correctionY = roundNumber(correctionY - overflowY, 0);
+
+        translateX += correctionX;
+        translateY += correctionY;
+
+        $('.drag-area').css(
+            'transform', `translate(${translateX}px, ${translateY}px)`
+        );
+
+        // console.log('correction = ', correctionX, correctionY);
+        // console.log('==========================================================');
     });
 
     $(document).mousemove((e) => {
@@ -325,15 +388,13 @@ $(document).ready(() => {
         if (e.target.id == 'canvas') {
             $canvasCursor2.css({
                 'top': e.pageY + 'px',
-                'left': e.pageX + $(window).width() * 0.5 + 'px',
+                'left': e.pageX + $(window).width()/2 + 'px',
             });
         }
         isOutsideWindow = false;
     });
 
     function activeDraggableDiv(isDraggable) {
-        let $all_draggable_elements = $('#draggable, #draggable2');
-        let $all_canvas_elements = $('#canvas, #canvas2');
         if (isDraggable) {
             $draggable.draggable('enable');
 
@@ -407,6 +468,11 @@ $(document).ready(() => {
             'top': defaultCanvasPosition.top + 'px',
             'left': defaultCanvasPosition.left + 'px'
         });
+        translateX = 0.0;
+        translateY = 0.0;
+        $('.drag-area').css(
+            'transform', `translate(0px, 0px)`
+        );
     }
 
 });

@@ -27,3 +27,7 @@ export const restoreContextDict = (context, state) => {
         context[prop] = state[prop];
     }
 };
+
+export const roundNumber = (number, decimal) => {
+    return Math.round((number + Number.EPSILON) * 10**decimal) / 10**decimal;
+}

@@ -1,5 +1,5 @@
 import { TOOL_PAINT_BUCKET, TOOL_BRUSH, TOOL_ERASER } from './tool.js';
-import { getMouseCoordsOnCanvas, saveContextDict, restoreContextDict } from './utils.js'
+import { getMouseCoordsOnCanvas, saveContextDict, restoreContextDict, roundNumber } from './utils.js'
 import Fill from './fill.class.js';
 
 export default class Paint {
@@ -14,8 +14,6 @@ export default class Paint {
         this.origin_size = { w: this.canvas.width, h: this.canvas.height };
         this.upload_scaled_size = { w: this.canvas.width, h: this.canvas.height };
         this.current_size = { w: this.canvas.width, h: this.canvas.height };
-
-        this.delay_zoom;
     }
 
     init() {
@@ -100,7 +98,7 @@ export default class Paint {
             return;
         }
         this.current_ratio += step;
-        this.current_ratio = Math.round((this.current_ratio + Number.EPSILON) * 100) / 100;
+        this.current_ratio = roundNumber(this.current_ratio, 2);
         let new_w = this.current_ratio * this.upload_scaled_size.w;
         let new_h = this.current_ratio * this.upload_scaled_size.h;
         this.current_size = { w: new_w, h: new_h };
@@ -115,17 +113,6 @@ export default class Paint {
         if (typeof this.temp_canvas != 'undefined') {
             this.context.drawImage(this.temp_canvas, 0, 0, this.canvas.width, this.canvas.height);
         }
-        // if (typeof this.undoStack != 'undefined') {
-        //     if (this.undoStack.length > 0) {
-        //         this.context.drawImage(
-        //             this.current_canvas_data, 
-        //             0, 
-        //             0, 
-        //             this.current_size.w, 
-        //             this.current_size.h
-        //         );
-        //     }
-        // }
 
         restoreContextDict(this.context, state);
         this.canvas_bg.query.css({
@@ -240,7 +227,11 @@ export default class Paint {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.isFinished = false;
         this.current_ratio = 1.0;
-        this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+        this.current_size = this.upload_scaled_size;
+        this.updateCurrentSize();
+        if (typeof this.temp_canvas != 'undefined'){
+            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+        }
     }
 
     isBlankCanvas() {
