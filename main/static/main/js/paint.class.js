@@ -149,10 +149,7 @@ export default class Paint {
 
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.startPos.x, this.startPos.y);
-            // this.context.clearRect(this.startPos.x, this.startPos.y, this._lineWidth, this._lineWidth);
-            console.log('eraser start');
         } else if (this.tool == TOOL_PAINT_BUCKET) {
-            // new Fill(this.canvas, this.startPos, {r:127,g:252,b:3});
             new Fill(this.canvas, this.startPos, this.color);
         }
     }
@@ -163,17 +160,17 @@ export default class Paint {
             this.drawFreeLine(this._lineWidth);
         } else if (this.tool == TOOL_ERASER) {
             this.clearCircle(this.currentPos.x, this.currentPos.y);
-            // this.context.clearRect(this.currentPos.x, this.currentPos.y, this._lineWidth, this._lineWidth);
-            console.log('eraser move');
         }
     }
 
     onMouseUp(e) {
         this.canvas.onmousemove = null;
         document.onmouseup = null;
-        console.log('mouse up');
+        
         if (typeof this.temp_canvas != 'undefined') {
-            this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+            if (this.tool == TOOL_ERASER) {
+                this.temp_context.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height);
+            }
             this.temp_context.drawImage(this.context.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
         }
     }
