@@ -83,7 +83,6 @@ body {
     width: 300vw;
     height: 300vh;
     position: relative;
-    background-color: gray;
 }
 
 .drag-area {
@@ -91,7 +90,6 @@ body {
     left: 25vw;
     width: 250vw;
     height: 200vh;
-    background-color: blue;
 }
 
 .canvas-area {
