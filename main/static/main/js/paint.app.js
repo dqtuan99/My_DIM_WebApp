@@ -19,7 +19,7 @@ let translateY = 0;
 
 $(window).load(() => {
     defaultCanvasPosition = $draggable.position();
-    defaultCanvasPosition.top = Math.floor(defaultCanvasPosition.top);
+    defaultCanvasPosition.top = Math.floor(defaultCanvasPosition.top) + 50;
     defaultCanvasPosition.left = Math.floor(defaultCanvasPosition.left);
 
     $draggable.css({
@@ -35,9 +35,9 @@ $(window).load(() => {
 
 $(document).ready(() => {
 
-    paint.activeTool = TOOL_BRUSH;
+    paint.currentTool = TOOL_BRUSH;
     paint.lineWidth = 25;
-    paint.selectedColor = COLOR_UNCERTAIN;
+    paint.currentStyle = COLOR_UNCERTAIN;
     paint.init();
 
     let $canvasCursor = $('.canvas-cursor');
@@ -52,6 +52,7 @@ $(document).ready(() => {
     let $restart = $('[data-result="restart"]');
     let $brush_size = $('#brushSize');
     let $predict = $('[data-result="predict"]');
+    let $toggle_original = $('[data-result="toggle"]');
     let $download = $('[data-result="download"]');
 
     $draggable = $('#draggable');
@@ -130,11 +131,9 @@ $(document).ready(() => {
             }
             img.src = event.target.result;
 
-            paint.canvas_bg.input_img = img.src;
-            paint.canvas_bg.currentSrc = img.src;
+            paint.canvas_bg.source = img.src;
 
-            paint2.canvas_bg.input_img = img.src;
-            paint2.canvas_bg.currentSrc = img.src;
+            paint2.canvas_bg.source = img.src;
         }
         reader.readAsDataURL(e.target.files[0]);
     });
@@ -146,7 +145,7 @@ $(document).ready(() => {
         $('[data-tool].active').removeClass('active');
         $(e.currentTarget).addClass('active');
         let selectedTool = e.currentTarget.getAttribute('data-tool');
-        paint.activeTool = selectedTool;
+        paint.currentTool = selectedTool;
         if (selectedTool == TOOL_DRAGGER) {
             activeDraggableDiv(true);
             $brush_size.prop('disabled', true);
@@ -188,9 +187,9 @@ $(document).ready(() => {
             if (selectedTool == TOOL_ERASER) {
                 $canvasCursor.css('background-color', 'transparent');
                 $canvasCursor2.css('background-color', 'transparent');
-            } else if (selectedTool == TOOL_BRUSH) {            
-                $canvasCursor.css('background-color', paint.color);
-                $canvasCursor2.css('background-color', paint.color);
+            } else if (selectedTool == TOOL_BRUSH) {
+                $canvasCursor.css('background-color', paint.currentStyle);
+                $canvasCursor2.css('background-color', paint.currentStyle);
             }
         }
     });
@@ -202,8 +201,8 @@ $(document).ready(() => {
         $('[data-color].active').removeClass('active');
         $(e.currentTarget).addClass('active');
         let currentColor = e.currentTarget.getAttribute('data-color');
-        paint.selectedColor = currentColor;
-        if (paint.tool == TOOL_ERASER) {
+        paint.currentStyle = currentColor;
+        if (paint.currentTool == TOOL_ERASER) {
             return;
         }
         $canvasCursor.css('background-color', currentColor);
@@ -214,11 +213,59 @@ $(document).ready(() => {
         if (!isClickable($restart)) {
             return;
         }
-        if (paint.isFinished) {
-            paint.canvas_bg.setImgSource(paint.canvas_bg.input_img);
-        }
+        paint2.canvas_bg.source = paint.canvas_bg.source;
         restartCanvas();
     });
+
+    $toggle_original.click((e) => {
+        if (!isClickable($toggle_original)) {
+            return;
+        }
+        $toggle_original.toggleClass('active');
+        let is_active = $toggle_original.hasClass('active');
+        toggle_original_icon(is_active);
+        if (is_active) {            
+            var img_src = paint2.canvas_bg.output_img;
+        } else {
+            var img_src = paint.canvas_bg.source;
+            $(paint.canvas).hide();
+        }
+        paint2.canvas_bg.source = img_src;
+    });
+
+    function toggle_original_icon(is_active) {
+        let icon_src = $toggle_original.children()[0].src;
+        icon_src = icon_src.split('/');
+        if (is_active) {
+            var icon_name = 'on.svg';
+        } else {
+            var icon_name = 'off.svg';
+        }
+        icon_src[icon_src.length - 1] = icon_name;
+        icon_src = icon_src.join('/');
+        $toggle_original.children(0)[0].src = icon_src;
+        toggle_screen_label(is_active);
+        toggle_canvas_visibility(is_active);
+    }
+
+    function toggle_screen_label(is_active) {
+        if (is_active) {
+            $('.split-screen.left .label')[0].innerHTML = 'Original + Masks';
+            $('.split-screen.right .label')[0].innerHTML = 'Result';
+        } else {
+            $('.split-screen.left .label')[0].innerHTML = 'Original';
+            $('.split-screen.right .label')[0].innerHTML = 'Original';
+        }
+    }
+
+    function toggle_canvas_visibility(is_active) {
+        if (is_active) {
+            $(paint.canvas).show();
+        } else {            
+            $(paint.canvas).hide();
+        }
+    }
+
 
     $predict.click(() => {
         if (!isClickable($predict)) {
@@ -233,36 +280,31 @@ $(document).ready(() => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                'input_image': paint.canvas_bg.input_img,
+                'input_image': paint.canvas_bg.source,
                 'input_trimap': paint.getCanvasDataURL(),
             })
         })
             .then(response => response.json())
             .then(result => {
                 // console.log(result);
-                paint.canvas_bg.bg_extracted_img = result;
-                paint.canvas_bg.setImgSource(result);
-                paint.clearCanvas();
-                paint.finishedDrawing = true;
+                paint2.canvas_bg.source = result;
+                paint2.canvas_bg.output_img = result;
 
-                $tools.each((idx, elm) => {
-                    activeClickableGUI($(elm), false);
-                }); // TODO
                 activeClickableGUI($download, true);
-                activeClickableGUI($predict, false);
+                activeClickableGUI($toggle_original, true);
 
                 $loading.hide();
             })
             .catch(error => {
-                $loading.hide();
                 alert(error);
+                $loading.hide();
             });
     });
 
     $download.click(() => {
         let link = document.createElement("a");
-        link.$download = "my-image.png";
-        link.href = paint.canvas_bg.bg_extracted_img;
+        link.download = "my-image.png";
+        link.href = paint2.canvas_bg.source;
         link.click();
     });
 
@@ -282,14 +324,11 @@ $(document).ready(() => {
     });
 
     $(document).click(() => {
-        if (paint.isFinished) {
-            return;
-        }
         activeClickableGUI($restart, !(paint.isBlankCanvas() && Number($draggable.css('top').split('px')[0]) == defaultCanvasPosition.top && Number($draggable.css('left').split('px')[0]) == defaultCanvasPosition.left));
-        activeClickableGUI($predict, !(paint.canvas_bg.src == '' || paint.isBlankCanvas()));
+        activeClickableGUI($predict, !(paint.canvas_bg.source == '' || paint.isBlankCanvas()));
         $colors.each((idx, elm) => {
-            activeClickableGUI($(elm), paint.tool != TOOL_ERASER);
-        }); 
+            activeClickableGUI($(elm), paint.currentTool == TOOL_BRUSH || paint.currentTool == TOOL_PAINT_BUCKET);
+        });
     });
 
     $(document).bind('keypress', (e) => {
@@ -322,45 +361,50 @@ $(document).ready(() => {
             return;
         }
 
-        let current_canvas_pos = getMouseCoordsOnCanvas(e, paint.canvas);
+        if (e.currentTarget.id == 'draggable') {
+            var current_paint = paint;
+            var current_draggable = $draggable;
+        } else if (e.currentTarget.id == 'draggable2') {
+            var current_paint = paint2;
+            var current_draggable = $draggable2;
+        }
+
+        let current_canvas_pos = getMouseCoordsOnCanvas(e, current_paint.canvas);
         let currentX = current_canvas_pos.x;
         let currentY = current_canvas_pos.y;
-        let originX = paint.canvas.width / 2;
-        let originY = paint.canvas.height / 2;
+
+        let originX = current_paint.canvas.width / 2;
+        let originY = current_paint.canvas.height / 2;
 
         let dx = currentX - originX;
         let dy = currentY - originY;
 
-        let scale = paint.current_ratio / previous_ratio;
+        let scale = current_paint.current_ratio / previous_ratio;
 
         let dy_prime = dy * scale;
         let dx_prime = dx * scale;
+
         let correctionX = dx - dx_prime;
         let correctionY = dy - dy_prime;
-    
+
         let overflowX = 0;
         let overflowY = 0;
 
         let afterzoom_pos = {
-            x: $draggable.position().left + correctionX,
-            y: $draggable.position().top + correctionY
+            x: current_draggable.position().left + correctionX,
+            y: current_draggable.position().top + correctionY
         };
 
         if (afterzoom_pos.x < 0) {
             overflowX = afterzoom_pos.x;
-        } else if (afterzoom_pos.x > $(window).width()/2) {
-            overflowX = afterzoom_pos.x - $(window).width()/2;
+        } else if (afterzoom_pos.x > $(window).width() / 2) {
+            overflowX = afterzoom_pos.x - $(window).width() / 2;
         }
         if (afterzoom_pos.y < 0) {
             overflowY = afterzoom_pos.y;
         } else if (afterzoom_pos.y > $(window).height()) {
             overflowY = afterzoom_pos.y - $(window).height();
         }
-
-        // console.log('==========================================================');
-        // console.log('afterzoom position =', afterzoom_pos.x, afterzoom_pos.y);
-        // console.log('window size = ',$(window).width()/2, $(window).height()/2);
-        // console.log('overflow = ', overflowX, overflowY);
 
         correctionX = roundNumber(correctionX - overflowX, 0);
         correctionY = roundNumber(correctionY - overflowY, 0);
@@ -371,13 +415,10 @@ $(document).ready(() => {
         $('.drag-area').css(
             'transform', `translate(${translateX}px, ${translateY}px)`
         );
-
-        // console.log('correction = ', correctionX, correctionY);
-        // console.log('==========================================================');
     });
 
     $(document).mousemove((e) => {
-        if (paint.tool == TOOL_DRAGGER) {
+        if (paint.currentTool == TOOL_DRAGGER) {
             return;
         }
         let isOutsideWindow = false;
@@ -402,7 +443,7 @@ $(document).ready(() => {
         if (e.target.id == 'canvas') {
             $canvasCursor2.css({
                 'top': e.pageY + 'px',
-                'left': e.pageX + $(window).width()/2 + 'px',
+                'left': e.pageX + $(window).width() / 2 + 'px',
             });
         }
         isOutsideWindow = false;
@@ -466,12 +507,11 @@ $(document).ready(() => {
 
     function restartCanvas() {
         activeClickableGUI($restart, false);
-        $tools.each((idx, elm) => {
-            activeClickableGUI($(elm), true);
-        }); // TODO
         activeClickableGUI($download, false);
+        activeClickableGUI($toggle_original, false);
+        toggle_original_icon(true);
 
-        paint.canvas_bg.bg_extracted_img = ''; // TODO
+        paint2.canvas_bg.source = paint.canvas_bg.source;
         paint.clearCanvas();
         paint2.clearCanvas();
         $draggable.css({

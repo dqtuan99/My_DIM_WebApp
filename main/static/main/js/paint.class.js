@@ -26,40 +26,45 @@ export default class Paint {
         this.redoStack = [];
         this.undoLimit = 20;
 
-        this.isFinished = false;
-
         this.temp_canvas = document.createElement('canvas');
         this.temp_context = this.temp_canvas.getContext('2d');
         this.temp_canvas.width = this.current_size.w;
         this.temp_canvas.height = this.current_size.h;
     }
 
-    set activeTool(tool) {
+    set currentTool(tool) {
         this.tool = tool;
-        if (this.tool == TOOL_ERASER) {            
+        if (tool == TOOL_ERASER) {            
             this.context.globalCompositeOperation = "destination-out";
             this.context.fillStyle = "rgba(255,255,255,1)";
             this.context.strokeStyle = "rgba(255,255,255,1)";
-        } else if (this.tool == TOOL_BRUSH) {            
+        } else if (tool == TOOL_BRUSH) {            
             this.context.globalCompositeOperation = "source-over";
-            this.context.fillStyle = this.color;
-            this.context.strokeStyle = this.color;
+            this.context.fillStyle = this.styleColor;
+            this.context.strokeStyle = this.styleColor;
         }
     }
 
-    set lineWidth(lineWidth) {
-        this._lineWidth = lineWidth;
-        this.context.lineWidth = this._lineWidth;
+    get currentTool() {
+        return this.tool;
     }
 
-    set selectedColor(color) {
-        this.color = color;
-        this.context.strokeStyle = this.color;
-        this.context.fillStyle = this.color;
+    set lineWidth(width) {
+        this.context.lineWidth = width;
     }
 
-    set finishedDrawing(isFinished) {
-        this.isFinished = isFinished;
+    get lineWidth() {
+        return this.context.lineWidth;
+    }
+
+    set currentStyle(style) {
+        this.styleColor = style;
+        this.context.strokeStyle = style;
+        this.context.fillStyle = style;
+    }
+
+    get currentStyle() {
+        return this.context.strokeStyle;
     }
 
     set originSize(size) {
@@ -132,10 +137,10 @@ export default class Paint {
     }
 
     onMouseDown(e) {
-        if (e.which == 3 || this.isFinished) {
+        if (e.which == 3) {
             return;
         }
-        this.undoStack.push(this.getCurrentCanvas());
+        this.undoStack.push(this.getCurrentImgData());
 
         if (this.tool != TOOL_PAINT_BUCKET) {
             this.canvas.onmousemove = e => this.onMouseMove(e);
@@ -156,7 +161,7 @@ export default class Paint {
             this.context.moveTo(this.startPos.x, this.startPos.y);
 
         } else if (this.tool == TOOL_PAINT_BUCKET) {
-            new Fill(this.canvas, this.startPos, this.color);
+            new Fill(this.canvas, this.startPos, this.context.strokeStyle);
         }
     }
 
@@ -185,17 +190,7 @@ export default class Paint {
         this.context.stroke();
     }
 
-    // clearCircle(x, y) {
-    //     let radius = this._lineWidth / 2;
-    //     this.context.save();
-    //     this.context.beginPath();
-    //     this.context.arc(x, y, radius, 0, 2 * Math.PI, true);
-    //     this.context.clip();
-    //     this.context.clearRect(x - radius, y - radius, radius * 2, radius * 2);
-    //     this.context.restore();
-    // }
-
-    getCurrentCanvas() {
+    getCurrentImgData() {
         let currentCanvas = this.context.getImageData(
             0,
             0,
@@ -213,7 +208,7 @@ export default class Paint {
         if (this.undoStack.length <= 0) {
             return;
         }
-        this.redoStack.push(this.getCurrentCanvas());
+        this.redoStack.push(this.getCurrentImgData());
         let latestImage = this.undoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
     }
@@ -222,7 +217,7 @@ export default class Paint {
         if (this.redoStack.length <= 0) {
             return;
         }
-        this.undoStack.push(this.getCurrentCanvas());
+        this.undoStack.push(this.getCurrentImgData());
         let latestImage = this.redoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
     }
@@ -236,7 +231,6 @@ export default class Paint {
         this.updateCurrentSize();
         this.undoStack = [];
         this.redoStack = [];
-        this.isFinished = false;
     }
 
     isBlankCanvas() {
@@ -248,8 +242,8 @@ export default class Paint {
     }
 
     getCanvasDataURL() {
-        let w = this.canvas_bg.origin_w;
-        let h = this.canvas_bg.origin_h;
+        let w = this.origin_size.w;
+        let h = this.origin_size.h;
         let scaledUpCanvas = document.createElement('canvas');
         scaledUpCanvas.width = w;
         scaledUpCanvas.height = h;
@@ -266,34 +260,23 @@ Paint.CanvasBackground = class _ {
 
     constructor(canvasBgId) {
         this.query = $(canvasBgId);
-        this.input_img_b64 = '';
-        this.bg_extracted_img_b64 = '';
         this.current_src = this.query.attr('src');
     }
 
-    get input_img() {
-        return this.input_img_b64;
-    }
-
-    set input_img(input_img) {
-        this.input_img_b64 = input_img;
-    }
-
-    get bg_extracted_img() {
-        return this.bg_extracted_img_b64;
-    }
-
-    set bg_extracted_img(bg_extracted_img) {
-        this.bg_extracted_img_b64 = bg_extracted_img;
-    }
-
-    get src() {
+    get source() {
         return this.current_src;
     }
 
-    set currentSrc(src) {
+    set source(src) {
         this.current_src = src;
         this.query.attr('src', src);
     }
 
+    get output_img() {
+        return this.extracted_img;
+    }
+
+    set output_img(img) {
+        this.extracted_img = img;
+    }
 }

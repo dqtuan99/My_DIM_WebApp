@@ -1,6 +1,7 @@
 import torch
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # sets device for model and PyTorch tensors
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # sets device for model and PyTorch tensors
+device = torch.device('cpu');
 
 im_size = 320
 unknown_code = 128

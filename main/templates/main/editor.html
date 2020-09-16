@@ -25,6 +25,7 @@
     {% block body %}
     <div class="whole-screen">
         <div class="split-screen left">
+            <div class="label">Original + Masks</div>
             <div class="containment-area">
                 <div class="drag-area" id="draggable">
                     <div class="canvas-area">
@@ -36,6 +37,7 @@
         </div>
         <div class="split-separator effect8"></div>
         <div class="split-screen right">
+            <div class="label">Result</div>
             <div class="containment-area">
                 <div class="drag-area" id="draggable2">
                     <div class="canvas-area">
@@ -46,12 +48,6 @@
             </div>
         </div>
     </div>
-
-
-    <!-- <div class="canvas-container" id="draggable" style="display: none;">
-        <canvas id="canvas" width="640" height="480"></canvas>
-        <img id="canvas-background" src="">
-    </div> -->
 
     <div class="canvas-cursor"></div>
     <div class="canvas-cursor2"></div>
@@ -111,6 +107,10 @@
                 <img src="{% static 'main/image/cut.svg' %}" alt="">
                 <br />Cut
             </div>
+            <div class="item active" data-result="toggle">
+                <img src="{% static 'main/image/on.svg' %}" alt="">
+                <br />Original
+            </div>
             <div class="item" data-result="download">
                 <img src="{% static 'main/image/download.svg' %}" alt="">
                 <br />Download
@@ -118,12 +118,12 @@
         </div>
     </div>
 
-    <!-- <div class="loading-animation">
+    <div class="loading-animation">
         <div class="label">Predicting</div>
         <div class="circle"></div>
         <div class="circle"></div>
         <div class="circle"></div>
-    </div> -->
+    </div>
 
     {% endblock %}
 </body>
