@@ -19,8 +19,8 @@ body {
   display: none;
 }
 
-#canvas, #canvas2 {
-    border: solid 4px #3f3737;
+.canvas-area canvas {
+    /* border: solid 4px #3f3737; */
     z-index: 2;
     opacity: 0.5;
     cursor: none;
@@ -30,7 +30,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-#canvas-background, #canvas-background2 {
+.canvas-area img {
     z-index: 1;
     position: absolute;
     top: 50%;

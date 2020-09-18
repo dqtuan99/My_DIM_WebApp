@@ -1,4 +1,4 @@
-import { TOOL_PAINT_BUCKET, TOOL_BRUSH, TOOL_ERASER } from './tool.js';
+import { TOOL_PAINT_BUCKET, TOOL_BRUSH, TOOL_ERASER } from './const/tool.js';
 import { getMouseCoordsOnCanvas, saveContextDict, restoreContextDict, roundNumber } from './utils.js'
 import Fill from './fill.class.js';
 
@@ -34,11 +34,11 @@ export default class Paint {
 
     set currentTool(tool) {
         this.tool = tool;
-        if (tool == TOOL_ERASER) {            
+        if (tool == TOOL_ERASER) {
             this.context.globalCompositeOperation = "destination-out";
             this.context.fillStyle = "rgba(255,255,255,1)";
             this.context.strokeStyle = "rgba(255,255,255,1)";
-        } else if (tool == TOOL_BRUSH) {            
+        } else if (tool == TOOL_BRUSH) {
             this.context.globalCompositeOperation = "source-over";
             this.context.fillStyle = this.styleColor;
             this.context.strokeStyle = this.styleColor;
@@ -175,14 +175,10 @@ export default class Paint {
     onMouseUp(e) {
         this.canvas.onmousemove = null;
         document.onmouseup = null;
+
         this.context.closePath();
 
-        if (typeof this.temp_canvas != 'undefined') {
-            if (this.tool == TOOL_ERASER) {
-                this.temp_canvas.width = this.temp_canvas.width;
-            }
-            this.temp_context.drawImage(this.context.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
-        }
+        this.update_temp_canvas();
     }
 
     drawFreeLine() {
@@ -211,6 +207,8 @@ export default class Paint {
         this.redoStack.push(this.getCurrentImgData());
         let latestImage = this.undoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
+        this.update_temp_canvas();
+        // TODO
     }
 
     redoPaint() {
@@ -220,6 +218,15 @@ export default class Paint {
         this.undoStack.push(this.getCurrentImgData());
         let latestImage = this.redoStack.pop();
         this.context.putImageData(latestImage, 0, 0);
+        this.update_temp_canvas();
+        // TODO
+    }
+
+    update_temp_canvas() {
+        if (typeof this.temp_canvas != 'undefined') {
+            this.temp_canvas.width = this.temp_canvas.width;
+            this.temp_context.drawImage(this.canvas, 0, 0, this.temp_canvas.width, this.temp_canvas.height);
+        }
     }
 
     clearCanvas() {

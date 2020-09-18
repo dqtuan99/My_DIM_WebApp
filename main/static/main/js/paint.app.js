@@ -1,5 +1,6 @@
-import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_ERASER, TOOL_PAINT_BUCKET } from './tool.js';
-import { COLOR_UNCERTAIN } from './tool.js';
+import { TOOL_BRUSH, TOOL_DRAGGER, TOOL_ERASER, TOOL_PAINT_BUCKET } from './const/tool.js';
+import { COLOR_UNCERTAIN } from './const/color.js';
+import { TOGGLE_OFF_URL, TOGGLE_ON_URL } from './const/icon.url.js';
 import Paint from './paint.class.js';
 import { getMouseCoordsOnCanvas, roundNumber } from './utils.js';
 
@@ -11,11 +12,7 @@ let $draggable2;
 
 let defaultCanvasPosition;
 
-let MAX_WIDTH = $(window).width() * 0.7;
-let MAX_HEIGHT = $(window).height() * 0.7;
-
-let translateX = 0;
-let translateY = 0;
+let $loading = $('.loading-animation');
 
 $(window).load(() => {
     defaultCanvasPosition = $draggable.position();
@@ -31,6 +28,8 @@ $(window).load(() => {
         'top': defaultCanvasPosition.top,
         'left': defaultCanvasPosition.left
     });
+
+    $loading.hide()
 })
 
 $(document).ready(() => {
@@ -41,10 +40,6 @@ $(document).ready(() => {
     paint.init();
 
     let $canvasCursor = $('.canvas-cursor');
-    let $canvasCursor2 = $('.canvas-cursor2');
-
-    let $loading = $('.loading-animation');
-    $loading.hide();
 
     let $tools = $('[data-tool]');
     let $colors = $('[data-color]');
@@ -54,6 +49,12 @@ $(document).ready(() => {
     let $predict = $('[data-result="predict"]');
     let $toggle_original = $('[data-result="toggle"]');
     let $download = $('[data-result="download"]');
+
+    let MAX_WIDTH = $(window).width() * 0.7;
+    let MAX_HEIGHT = $(window).height() * 0.7;
+
+    let translateX = 0;
+    let translateY = 0;
 
     $draggable = $('#draggable');
     $draggable2 = $('#draggable2');
@@ -90,28 +91,17 @@ $(document).ready(() => {
     $draggable.draggable(draggableOptions);
     $draggable2.draggable(draggable2Options);
 
-    $draggable2.css('cursor', 'grab');
-    $draggable2.mousedown(() => {
-        $draggable.css('cursor', 'grabbing');
-    });
-    $draggable2.mouseup(() => {
-        $draggable.css('cursor', 'grab');
-    });
-    $(paint2.canvas).css('cursor', 'grab');
-    $(paint2.canvas).mousedown(() => {
-        $(paint2.canvas).css('cursor', 'grabbing');
-    });
-    $(paint2.canvas).mouseup(() => {
-        $(paint2.canvas).css('cursor', 'grab');
-    });
+    let cursor_type = {
+        css: 'grab',
+        mousedown: 'grabbing',
+        mouseup: 'grab'
+    };
+    setup_cursor_click_effect($draggable2, cursor_type);
+    setup_cursor_click_effect($(paint2.canvas), cursor_type);
 
     activeDraggableDiv(false);
 
     $canvasCursor.css({
-        'width': $brush_size.val() + 'px',
-        'height': $brush_size.val() + 'px',
-    });
-    $canvasCursor2.css({
         'width': $brush_size.val() + 'px',
         'height': $brush_size.val() + 'px',
     });
@@ -151,45 +141,37 @@ $(document).ready(() => {
             $brush_size.prop('disabled', true);
         } else if (selectedTool == TOOL_PAINT_BUCKET) {
             activeDraggableDiv(false);
-
             $brush_size.prop('disabled', true);
 
-            $(paint.canvas).css('cursor', 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto');
-            $(paint.canvas).click(() => {
-                $(paint.canvas).css('cursor', 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto');
+            setup_cursor_click_effect($(paint.canvas), {
+                css: 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto',
+                mousedown: 'none',
+                mouseup: 'url("static/main/image/paint-bucket-cursor.svg") 32 32, auto'
             });
+
             $canvasCursor.css({
-                'width': '10px',
-                'height': '10px',
-            });
-            $canvasCursor2.css({
                 'width': '10px',
                 'height': '10px',
             });
         } else {
             activeDraggableDiv(false);
-
             $brush_size.prop('disabled', false);
 
-            $(paint.canvas).css('cursor', 'none');
-            $(paint.canvas).click(() => {
-                $(paint.canvas).css('cursor', 'none');
+            setup_cursor_click_effect($(paint.canvas), {
+                css: 'none',
+                mousedown: 'none',
+                mouseup: 'none'
             });
+
             $canvasCursor.css({
-                'width': $brush_size.val() + 'px',
-                'height': $brush_size.val() + 'px',
-            });
-            $canvasCursor2.css({
                 'width': $brush_size.val() + 'px',
                 'height': $brush_size.val() + 'px',
             });
 
             if (selectedTool == TOOL_ERASER) {
                 $canvasCursor.css('background-color', 'transparent');
-                $canvasCursor2.css('background-color', 'transparent');
             } else if (selectedTool == TOOL_BRUSH) {
                 $canvasCursor.css('background-color', paint.currentStyle);
-                $canvasCursor2.css('background-color', paint.currentStyle);
             }
         }
     });
@@ -206,7 +188,6 @@ $(document).ready(() => {
             return;
         }
         $canvasCursor.css('background-color', currentColor);
-        $canvasCursor2.css('background-color', currentColor);
     });
 
     $restart.click(() => {
@@ -217,39 +198,34 @@ $(document).ready(() => {
         restartCanvas();
     });
 
-    $toggle_original.click((e) => {
+    $toggle_original.click(() => {
         if (!isClickable($toggle_original)) {
             return;
         }
         $toggle_original.toggleClass('active');
-        let is_active = $toggle_original.hasClass('active');
-        toggle_original_icon(is_active);
-        if (is_active) {            
-            var img_src = paint2.canvas_bg.output_img;
-        } else {
-            var img_src = paint.canvas_bg.source;
-            $(paint.canvas).hide();
-        }
-        paint2.canvas_bg.source = img_src;
+        let is_showing_original = $toggle_original.hasClass('active');
+        handle_toggle_original(is_showing_original);
     });
 
-    function toggle_original_icon(is_active) {
-        let icon_src = $toggle_original.children()[0].src;
-        icon_src = icon_src.split('/');
-        if (is_active) {
-            var icon_name = 'on.svg';
-        } else {
-            var icon_name = 'off.svg';
-        }
-        icon_src[icon_src.length - 1] = icon_name;
-        icon_src = icon_src.join('/');
-        $toggle_original.children(0)[0].src = icon_src;
-        toggle_screen_label(is_active);
-        toggle_canvas_visibility(is_active);
+    function handle_toggle_original(is_showing_original) {
+        toggle_original_icon(is_showing_original);
+        toggle_screen_label(is_showing_original);
+        toggle_canvas_visibility(is_showing_original);
+        toggle_canvas2_source(is_showing_original);
     }
 
-    function toggle_screen_label(is_active) {
-        if (is_active) {
+
+    function toggle_original_icon(is_showing_original) {
+        if (is_showing_original) {
+            var icon_src = TOGGLE_ON_URL;
+        } else {
+            var icon_src = TOGGLE_OFF_URL;
+        }
+        $toggle_original.children(0)[0].src = icon_src;
+    }
+
+    function toggle_screen_label(is_showing_original) {
+        if (is_showing_original) {
             $('.split-screen.left .label')[0].innerHTML = 'Original + Masks';
             $('.split-screen.right .label')[0].innerHTML = 'Result';
         } else {
@@ -258,14 +234,23 @@ $(document).ready(() => {
         }
     }
 
-    function toggle_canvas_visibility(is_active) {
-        if (is_active) {
+    function toggle_canvas_visibility(is_showing_original) {
+        if (is_showing_original) {
             $(paint.canvas).show();
         } else {            
             $(paint.canvas).hide();
         }
     }
 
+    function toggle_canvas2_source(is_showing_original) {
+        if (is_showing_original) {            
+            var img_src = paint2.canvas_bg.output_img;
+        } else {
+            var img_src = paint.canvas_bg.source;
+            $(paint.canvas).hide();
+        }
+        paint2.canvas_bg.source = img_src;
+    }
 
     $predict.click(() => {
         if (!isClickable($predict)) {
@@ -313,10 +298,6 @@ $(document).ready(() => {
     });
     $brush_size.change(() => {
         $canvasCursor.css({
-            'width': $brush_size.val() + 'px',
-            'height': $brush_size.val() + 'px',
-        });
-        $canvasCursor2.css({
             'width': $brush_size.val() + 'px',
             'height': $brush_size.val() + 'px',
         });
@@ -428,20 +409,16 @@ $(document).ready(() => {
                     'top': '-1000px',
                     'left': '-1000px',
                 });
-                $canvasCursor2.css({
-                    'top': '-1000px',
-                    'left': '-1000px',
-                });
                 isOutsideWindow = true;
             }
             return;
         }
-        $canvasCursor.css({
+        $($canvasCursor[0]).css({
             'top': e.pageY + 'px',
             'left': e.pageX + 'px',
         });
         if (e.target.id == 'canvas') {
-            $canvasCursor2.css({
+            $($canvasCursor[1]).css({
                 'top': e.pageY + 'px',
                 'left': e.pageX + $(window).width() / 2 + 'px',
             });
@@ -453,55 +430,87 @@ $(document).ready(() => {
         if (isDraggable) {
             $draggable.draggable('enable');
 
-            $draggable.css('cursor', 'grab');
-            $draggable.mousedown(() => {
-                $draggable.css('cursor', 'grabbing');
-            });
-            $draggable.mouseup(() => {
-                $draggable.css('cursor', 'grab');
-            });
+            let cursor_type = {
+                css: 'grab',
+                mousedown: 'grabbing',
+                mouseup: 'grab'
+            };
+            setup_cursor_click_effect($draggable, cursor_type);
+            setup_cursor_click_effect($(paint.canvas), cursor_type);
 
-            $(paint.canvas).css('cursor', 'grab');
-            $(paint.canvas).mousedown(() => {
-                $(paint.canvas).css('cursor', 'grabbing');
-            });
-            $(paint.canvas).mouseup(() => {
-                $(paint.canvas).css('cursor', 'grab');
-            });
+            // $draggable.css('cursor', 'grab');
+            // $draggable.mousedown(() => {
+            //     $draggable.css('cursor', 'grabbing');
+            // });
+            // $draggable.mouseup(() => {
+            //     $draggable.css('cursor', 'grab');
+            // });
+
+            // $(paint.canvas).css('cursor', 'grab');
+            // $(paint.canvas).mousedown(() => {
+            //     $(paint.canvas).css('cursor', 'grabbing');
+            // });
+            // $(paint.canvas).mouseup(() => {
+            //     $(paint.canvas).css('cursor', 'grab');
+            // });
         } else {
             $draggable.draggable('disable');
 
-            $draggable.css('cursor', 'default');
-            $draggable.mousedown(() => {
-                $draggable.css('cursor', 'default');
-            });
-            $draggable.mouseup(() => {
-                $draggable.css('cursor', 'default');
-            });
+            let cursor_type = {
+                css: 'default',
+                mousedown: 'default',
+                mouseup: 'default'
+            };
+            setup_cursor_click_effect($draggable, cursor_type);
 
-            $(paint.canvas).css('cursor', 'none');
-            $(paint.canvas).mousedown(() => {
-                $(paint.canvas).css('cursor', 'none');
-            });
-            $(paint.canvas).mouseup(() => {
-                $(paint.canvas).css('cursor', 'none');
-            });
+            cursor_type = {
+                css: 'none',
+                mousedown: 'none',
+                mouseup: 'none'
+            };
+            setup_cursor_click_effect($(paint.canvas), cursor_type);
+
+            // $draggable.css('cursor', 'default');
+            // $draggable.mousedown(() => {
+            //     $draggable.css('cursor', 'default');
+            // });
+            // $draggable.mouseup(() => {
+            //     $draggable.css('cursor', 'default');
+            // });
+
+            // $(paint.canvas).css('cursor', 'none');
+            // $(paint.canvas).mousedown(() => {
+            //     $(paint.canvas).css('cursor', 'none');
+            // });
+            // $(paint.canvas).mouseup(() => {
+            //     $(paint.canvas).css('cursor', 'none');
+            // });
         }
     }
 
-    function isClickable(query) {
-        if (query.attr('class').split(' ').includes('clickable')) {
+    function setup_cursor_click_effect($query, cursor_type) {
+        $query.css('cursor', cursor_type.css);
+        $query.mousedown(() => {
+            $query.css('cursor', cursor_type.mousedown);
+        });
+        $query.mouseup(() => {
+            $query.css('cursor', cursor_type.mouseup);
+        });
+    }
+
+    function isClickable($query) {
+        if ($query.attr('class').split(' ').includes('clickable')) {
             return true;
         } else {
             return false;
         }
     }
 
-    function activeClickableGUI(query, activeCondition) {
+    function activeClickableGUI($query, activeCondition) {
         if (activeCondition) {
-            query.addClass('clickable');
+            $query.addClass('clickable');
         } else {
-            query.removeClass('clickable');
+            $query.removeClass('clickable');
         }
     }
 
@@ -509,7 +518,7 @@ $(document).ready(() => {
         activeClickableGUI($restart, false);
         activeClickableGUI($download, false);
         activeClickableGUI($toggle_original, false);
-        toggle_original_icon(true);
+        handle_toggle_original(true);
 
         paint2.canvas_bg.source = paint.canvas_bg.source;
         paint.clearCanvas();
