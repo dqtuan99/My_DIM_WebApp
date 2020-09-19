@@ -111,7 +111,7 @@ $(document).ready(() => {
         reader.onload = (event) => {
             let img = new Image();
             img.onload = () => {
-                paint.originSize = { w: img.width, h: img.height };
+                paint.origin_size = { w: img.width, h: img.height };
                 paint.scaleCanvasAfterUpload({ w: MAX_WIDTH, h: MAX_HEIGHT });
 
                 paint2.origin_size = paint.origin_size;

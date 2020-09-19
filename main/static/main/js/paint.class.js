@@ -13,7 +13,6 @@ export default class Paint {
         this.current_ratio = 1.0;
         this.origin_size = { w: this.canvas.width, h: this.canvas.height };
         this.upload_scaled_size = { w: this.canvas.width, h: this.canvas.height };
-        this.current_size = { w: this.canvas.width, h: this.canvas.height };
     }
 
     init() {
@@ -28,8 +27,8 @@ export default class Paint {
 
         this.temp_canvas = document.createElement('canvas');
         this.temp_context = this.temp_canvas.getContext('2d');
-        this.temp_canvas.width = this.current_size.w;
-        this.temp_canvas.height = this.current_size.h;
+        this.temp_canvas.width = this.canvas.width;
+        this.temp_canvas.height = this.canvas.height;
     }
 
     set currentTool(tool) {
@@ -72,6 +71,21 @@ export default class Paint {
         this.origin_size.h = size.h;
     }
 
+    scaleCanvasAfterUpload(max_size) {
+        let upload_scale = this.calculateUploadScale(max_size);
+        this.upload_scaled_size = {
+            w: this.origin_size.w / upload_scale,
+            h: this.origin_size.h / upload_scale
+        };
+        let new_size = this.upload_scaled_size;
+        this.resizeCanvas(new_size);
+
+        if (typeof this.temp_canvas != 'undefined') {
+            this.temp_canvas.width = new_size.w;
+            this.temp_canvas.height = new_size.h;
+        }
+    }
+
     calculateUploadScale(max_size) {
         let upload_scale = 1.0;
         let scaled = false;
@@ -91,21 +105,6 @@ export default class Paint {
         return upload_scale;
     }
 
-    scaleCanvasAfterUpload(max_size) {
-        let upload_scale = this.calculateUploadScale(max_size);
-        this.upload_scaled_size = {
-            w: this.origin_size.w / upload_scale,
-            h: this.origin_size.h / upload_scale
-        };
-        this.current_size = this.upload_scaled_size;
-        this.updateCurrentSize();
-
-        if (typeof this.temp_canvas != 'undefined') {
-            this.temp_canvas.width = this.current_size.w;
-            this.temp_canvas.height = this.current_size.h;
-        }
-    }
-
     zoomCanvas(step) {
         if (this.current_ratio + step <= 0.4) {
             return;
@@ -116,23 +115,23 @@ export default class Paint {
         this.current_ratio = roundNumber(this.current_ratio, 2);
         let new_w = this.current_ratio * this.upload_scaled_size.w;
         let new_h = this.current_ratio * this.upload_scaled_size.h;
-        this.current_size = { w: new_w, h: new_h };
-        this.updateCurrentSize();
+        let new_size = { w: new_w, h: new_h };
+        this.resizeCanvas(new_size);
     }
 
-    updateCurrentSize() {
+    resizeCanvas(new_size) {
         let state = saveContextDict(this.context);
 
-        this.canvas.width = this.current_size.w;
-        this.canvas.height = this.current_size.h;
+        this.canvas.width = new_size.w;
+        this.canvas.height = new_size.h;
         if (typeof this.temp_canvas != 'undefined') {
             this.context.drawImage(this.temp_canvas, 0, 0, this.canvas.width, this.canvas.height);
         }
 
         restoreContextDict(this.context, state);
         this.canvas_bg.query.css({
-            'width': this.current_size.w,
-            'height': this.current_size.h
+            'width': new_size.w,
+            'height': new_size.h
         });
     }
 
@@ -140,7 +139,7 @@ export default class Paint {
         if (e.which == 3) {
             return;
         }
-        this.undoStack.push(this.getCurrentImgData());
+        this.undoStack.push(this.get_current_canvas_data());
 
         if (this.tool != TOOL_PAINT_BUCKET) {
             this.canvas.onmousemove = e => this.onMouseMove(e);
@@ -186,40 +185,44 @@ export default class Paint {
         this.context.stroke();
     }
 
-    getCurrentImgData() {
-        let currentCanvas = this.context.getImageData(
-            0,
-            0,
-            this.canvas.clientWidth,
-            this.canvas.clientHeight
-        )
+    get_current_canvas_data() {
+        let temp_canvas = document.createElement('canvas');
+        temp_canvas.width = this.canvas.width;
+        temp_canvas.height = this.canvas.height;
+        temp_canvas.getContext('2d').drawImage(this.canvas, 0, 0);
+
         if (this.undoStack.length >= this.undoLimit) {
             this.undoStack.shift();
         }
 
-        return currentCanvas;
+        return temp_canvas;
+    }
+
+    put_current_canvas_data(src_canvas) {
+        let state = saveContextDict(this.context);
+        this.canvas.width = this.canvas.width;
+        this.context.drawImage(src_canvas, 0, 0, this.canvas.width, this.canvas.height);
+        restoreContextDict(this.context, state);
     }
 
     undoPaint() {
         if (this.undoStack.length <= 0) {
             return;
         }
-        this.redoStack.push(this.getCurrentImgData());
-        let latestImage = this.undoStack.pop();
-        this.context.putImageData(latestImage, 0, 0);
+        this.redoStack.push(this.get_current_canvas_data());
+        let lastest_canvas = this.undoStack.pop();
+        this.put_current_canvas_data(lastest_canvas);
         this.update_temp_canvas();
-        // TODO
     }
 
     redoPaint() {
         if (this.redoStack.length <= 0) {
             return;
         }
-        this.undoStack.push(this.getCurrentImgData());
-        let latestImage = this.redoStack.pop();
-        this.context.putImageData(latestImage, 0, 0);
+        this.undoStack.push(this.get_current_canvas_data());
+        let lastest_canvas = this.redoStack.pop();
+        this.put_current_canvas_data(lastest_canvas);
         this.update_temp_canvas();
-        // TODO
     }
 
     update_temp_canvas() {
@@ -234,15 +237,14 @@ export default class Paint {
             this.temp_canvas.width = this.temp_canvas.width;
         }
         this.current_ratio = 1.0;
-        this.current_size = this.upload_scaled_size;
-        this.updateCurrentSize();
+        this.resizeCanvas(this.upload_scaled_size);
         this.undoStack = [];
         this.redoStack = [];
     }
 
     isBlankCanvas() {
         const pixelBuffer = new Uint32Array(
-            this.context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
+            this.context.getImageData(0, 0, this.canvas.width, this.canvas.height).data.buffer
         );
 
         return !pixelBuffer.some(color => color !== 0);
@@ -254,11 +256,10 @@ export default class Paint {
         let scaledUpCanvas = document.createElement('canvas');
         scaledUpCanvas.width = w;
         scaledUpCanvas.height = h;
-        let scaledUpContext = scaledUpCanvas.getContext('2d');
-        scaledUpContext.drawImage(this.canvas, 0, 0, w, h);
-        let image = scaledUpCanvas.toDataURL("image/png", 1.0);
+        scaledUpCanvas.getContext('2d').drawImage(this.canvas, 0, 0, w, h);
+        let image_b64 = scaledUpCanvas.toDataURL("image/png", 1.0);
 
-        return image;
+        return image_b64;
     }
 
 }
