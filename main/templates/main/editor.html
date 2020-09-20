@@ -5,11 +5,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Background Cutter{% endblock %}</title>
+    <title>{% block title %}Background Predictor{% endblock %}</title>
 
     <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'main/css/loading.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/dropzone.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/toolbox.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/loading.css' %}">
     <script type="module" src="{% static 'main/js/paint.app.js' %}" defer></script>
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -23,100 +24,102 @@
 
 <body>
     {% block body %}
-    <div class="whole-screen">
-        <div class="split-screen left">
-            <div class="label">Original + Masks</div>
-            <div class="containment-area">
-                <div class="drag-area" id="draggable">
-                    <div class="canvas-area">
-                        <canvas id="canvas" width="640" height="480"></canvas>
-                        <img id="canvas-background" src="" alt="">
+    <div class="drop-zone">
+        <span class="prompt">
+            Drop image file here or click to upload
+        </span>
+        <input id="imageLoader" type="file" onclick="this.value=null;" accept="image/*" style="display: none;" />
+    </div>
+    <div class="main-app">
+        <div class="whole-screen">
+            <div class="split-screen left">
+                <div class="label">Original + Masks</div>
+                <div class="containment-area">
+                    <div class="drag-area" id="draggable">
+                        <div class="canvas-area">
+                            <canvas id="canvas" width="640" height="480"></canvas>
+                            <img id="canvas-background" src="" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="split-separator effect8"></div>
+            <div class="split-screen right">
+                <div class="label">Result</div>
+                <div class="containment-area">
+                    <div class="drag-area" id="draggable2">
+                        <div class="canvas-area">
+                            <canvas id="canvas2" width="640" height="480"></canvas>
+                            <img id="canvas-background2" src="" alt="">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="split-separator effect8"></div>
-        <div class="split-screen right">
-            <div class="label">Result</div>
-            <div class="containment-area">
-                <div class="drag-area" id="draggable2">
-                    <div class="canvas-area">
-                        <canvas id="canvas2" width="640" height="480"></canvas>
-                        <img id="canvas-background2" src="" alt="">
-                    </div>
+
+        <div class="canvas-cursor main-cursor"></div>
+        <div class="canvas-cursor"></div>
+
+        <div class="toolbox editing">            
+            <div class="group tool">
+                <div class="item clickable" data-tool="dragger">
+                    <img src="{% static 'main/image/grab.svg' %}" alt="">
+                    <br />Move
+                </div>
+                <div class="item clickable" data-tool="paint-bucket">
+                    <img src="{% static 'main/image/paint-bucket.svg' %}" alt="">
+                    <br />Bucket
+                </div>
+                <div class="item clickable active" data-tool="brush">
+                    <img src="{% static 'main/image/brush.svg' %}" alt="">
+                    <br />Brush
+                </div>
+                <div class="item clickable" data-tool="eraser">
+                    <img src="{% static 'main/image/eraser.svg' %}" alt="">
+                    <br />Eraser
+                </div>
+                <div class="item2">
+                    <input type="number" id="brushSize" name="brush-size" min="10" max="65" step="5" value="25">
+                    <br />Brush size
+                </div>
+            </div>
+            <div class="group-separator"></div>
+            <div class="group color">
+                <div class="item clickable active" data-color="#808080">
+                    <div class="swatch" style="background-color: #808080"></div>
+                    Unsure
+                </div>
+                <div class="item clickable" data-color="#37d61a">
+                    <div class="swatch" style="background-color: #37d61a"></div>
+                    Certain
+                </div>
+            </div>
+            <div class="group-separator"></div>
+            <div class="group result">
+                <div class="item" data-result="clear">
+                    <img src="{% static 'main/image/clear.svg' %}" alt="">
+                    <br />Clear
+                </div>
+                <div class="item" data-result="restart">
+                    <img src="{% static 'main/image/restart.svg' %}" alt="">
+                    <br />Restart
+                </div>
+                <div class="item" data-result="predict">
+                    <img src="{% static 'main/image/cut.svg' %}" alt="">
+                    <br />Predict
+                </div>
+                <div class="item" data-result="toggle">
+                    <img src="{% static 'main/image/off.svg' %}" alt="">
+                    <br />Original
+                </div>
+                <div class="item" data-result="download">
+                    <img src="{% static 'main/image/download.svg' %}" alt="">
+                    <br />Download
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="canvas-cursor"></div>
-    <div class="canvas-cursor"></div>
-
-    <div class="toolbox editing">
-        <div class="group command">
-            <div class="item clickable">
-                <label for="imageLoader" style="cursor: pointer; margin: -1px;">
-                    <img src="{% static 'main/image/upload.svg' %}" alt="">
-                    <br />Upload
-                </label>
-                <input id="imageLoader" type="file" onclick="this.value=null;" type="file" accept=".jpg, .jpeg, .png"
-                    style="display: none;" />
-            </div>
-        </div>
-        <div class="group-separator"></div>
-        <div class="group tool">
-            <div class="item clickable" data-tool="dragger">
-                <img src="{% static 'main/image/grab.svg' %}" alt="">
-                <br />Move
-            </div>
-            <div class="item clickable" data-tool="paint-bucket">
-                <img src="{% static 'main/image/paint-bucket.svg' %}" alt="">
-                <br />Bucket
-            </div>
-            <div class="item clickable active" data-tool="brush">
-                <img src="{% static 'main/image/brush.svg' %}" alt="">
-                <br />Brush
-            </div>
-            <div class="item clickable" data-tool="eraser">
-                <img src="{% static 'main/image/eraser.svg' %}" alt="">
-                <br />Eraser
-            </div>
-            <div class="item2">
-                <input type="number" id="brushSize" name="brush-size" min="15" max="60" step="5" value="25">
-                <br />Brush size
-            </div>
-        </div>
-        <div class="group-separator"></div>
-        <div class="group color">
-            <div class="item clickable active" data-color="#808080">
-                <div class="swatch" style="background-color: #808080"></div>
-                Unsure
-            </div>
-            <div class="item clickable" data-color="#37d61a">
-                <div class="swatch" style="background-color: #37d61a"></div>
-                Certain
-            </div>
-        </div>
-        <div class="group-separator"></div>
-        <div class="group result">
-            <div class="item" data-result="restart">
-                <img src="{% static 'main/image/restart.svg' %}" alt="">
-                <br />Clear all
-            </div>
-            <div class="item" data-result="predict">
-                <img src="{% static 'main/image/cut.svg' %}" alt="">
-                <br />Cut
-            </div>
-            <div class="item active" data-result="toggle">
-                <img src="{% static 'main/image/on.svg' %}" alt="">
-                <br />Original
-            </div>
-            <div class="item" data-result="download">
-                <img src="{% static 'main/image/download.svg' %}" alt="">
-                <br />Download
-            </div>
-        </div>
-    </div>
 
     <div class="loading-animation">
         <div class="label">Predicting</div>

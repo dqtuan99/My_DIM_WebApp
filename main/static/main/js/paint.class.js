@@ -37,7 +37,7 @@ export default class Paint {
             this.context.globalCompositeOperation = "destination-out";
             this.context.fillStyle = "rgba(255,255,255,1)";
             this.context.strokeStyle = "rgba(255,255,255,1)";
-        } else if (tool == TOOL_BRUSH) {
+        } else if (tool == TOOL_BRUSH || tool == TOOL_PAINT_BUCKET) {
             this.context.globalCompositeOperation = "source-over";
             this.context.fillStyle = this.styleColor;
             this.context.strokeStyle = this.styleColor;
@@ -106,9 +106,9 @@ export default class Paint {
     }
 
     zoomCanvas(step) {
-        if (this.current_ratio + step <= 0.4) {
+        if (this.current_ratio + step <= 0.5) {
             return;
-        } else if (this.current_ratio + step >= 2.5) {
+        } else if (this.current_ratio + step >= 3) {
             return;
         }
         this.current_ratio += step;
@@ -199,10 +199,8 @@ export default class Paint {
     }
 
     put_current_canvas_data(src_canvas) {
-        let state = saveContextDict(this.context);
-        this.canvas.width = this.canvas.width;
+        this.clear_canvas();
         this.context.drawImage(src_canvas, 0, 0, this.canvas.width, this.canvas.height);
-        restoreContextDict(this.context, state);
     }
 
     undoPaint() {
@@ -232,14 +230,20 @@ export default class Paint {
         }
     }
 
-    clearCanvas() {
+    clear_canvas() {
+        let state = saveContextDict(this.context);
+        this.canvas.width = this.canvas.width;
+        restoreContextDict(this.context, state);
+    }
+
+    restartCanvas() {
         if (typeof this.temp_canvas != 'undefined') {
             this.temp_canvas.width = this.temp_canvas.width;
+            this.undoStack = [];
+            this.redoStack = [];
         }
         this.current_ratio = 1.0;
         this.resizeCanvas(this.upload_scaled_size);
-        this.undoStack = [];
-        this.redoStack = [];
     }
 
     isBlankCanvas() {
