@@ -1,15 +1,13 @@
 import os
 import cv2
 import torch
+import torch.nn
 
 from DIM_API.DIM_Model.api import pred_pre_trimap, extract_foreground
-from DIM_API.DIM_Model.models_v16_4 import DIMModel
+from DIM_API.DIM_Model.models import DIMModel
 from DIM_API.DIM_Model.config import device
 
 checkpoint_name = 'checkpoint.pt'
-
-# devices = ['cpu', 'cuda']
-# device = devices[0]
 
 module_folder = 'DIM_Model'
 
@@ -20,7 +18,7 @@ CHECKPOINT_FILE = os.path.join(CHECKPOINT_FOLDER, checkpoint_name)
 
 def loadModel():
     checkpoint = CHECKPOINT_FILE
-    checkpoint = torch.load(checkpoint)
+    checkpoint = torch.load(checkpoint, map_location=device)
     model = DIMModel()
     model.load_state_dict(checkpoint)
     model = model.to(device)

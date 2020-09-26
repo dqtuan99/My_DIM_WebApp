@@ -19,7 +19,7 @@ body {
 }
 
 .canvas-area canvas {
-    border: solid 4px #3f3737;
+    /* border: solid 4px #3f3737; */
     z-index: 2;
     opacity: 0.5;
     cursor: none;

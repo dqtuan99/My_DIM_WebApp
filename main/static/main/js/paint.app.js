@@ -337,7 +337,7 @@ $(document).ready(() => {
         activeClickableGUI($restart, false);
         activeClickableGUI($download, false);
         activeClickableGUI($toggle_original, false);
-        handle_toggle_original(true);
+        handle_toggle_original(false);
 
         // paint2.canvas_bg.source = paint.canvas_bg.source;
         paint.restartCanvas();
@@ -372,6 +372,7 @@ $(document).ready(() => {
     });
 
     function handle_toggle_original(is_showing_original) {
+        console.log(is_showing_original);
         toggle_original_icon(is_showing_original);
         toggle_screen_label(is_showing_original);
         toggle_canvas_visibility(is_showing_original);
@@ -390,28 +391,28 @@ $(document).ready(() => {
 
     function toggle_screen_label(is_showing_original) {
         if (is_showing_original) {
-            $('.split-screen.left .label')[0].innerHTML = 'Original + Masks';
-            $('.split-screen.right .label')[0].innerHTML = 'Result';
-        } else {
             $('.split-screen.left .label')[0].innerHTML = 'Original';
             $('.split-screen.right .label')[0].innerHTML = 'Original';
+        } else {
+            $('.split-screen.left .label')[0].innerHTML = 'Original + Masks';
+            $('.split-screen.right .label')[0].innerHTML = 'Result';
         }
     }
 
     function toggle_canvas_visibility(is_showing_original) {
         if (is_showing_original) {
-            $(paint.canvas).show();
-        } else {
             $(paint.canvas).hide();
+        } else {
+            $(paint.canvas).show();
         }
     }
 
     function toggle_canvas2_source(is_showing_original) {
         if (is_showing_original) {
-            var img_src = paint2.canvas_bg.output_img;
-        } else {
             var img_src = paint.canvas_bg.source;
             $(paint.canvas).hide();
+        } else {
+            var img_src = paint2.canvas_bg.output_img;
         }
         paint2.canvas_bg.source = img_src;
     }
