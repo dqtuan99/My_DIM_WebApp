@@ -426,7 +426,7 @@ $(document).ready(() => {
         }
         $loading.show();
 
-        fetch('http://127.0.0.1:8000/API/predict-bg/', {
+        fetch('https://my-dim-webapp.herokuapp.com/API/predict-bg/', {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
