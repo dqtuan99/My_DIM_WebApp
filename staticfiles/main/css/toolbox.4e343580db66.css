@@ -1,0 +1,81 @@
+.toolbox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 5px;
+    display: flex;
+    background-color: white;
+    border: solid grey 1px;
+    border-radius: 12px;
+    font-size: small;
+    z-index: 10;
+}
+
+.toolbox .group {
+    display: flex;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.toolbox .group .item:not(.clickable) {
+    opacity: 0.5;
+}
+
+.toolbox .group .item, .toolbox .group .item.clickable {
+    margin: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 4px;
+    text-align: center;
+    transition: all .3s;
+    cursor: pointer;
+    border: solid gray 2px;
+    border-radius: 24%;
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.toolbox .group .item2 {
+    padding: 8px;
+    margin-top: 6px;
+    text-align: center;
+    min-width: 64px;
+    min-height: 64px;
+}
+
+.toolbox .group .item2 input {
+    height: 32px;
+    width: 100%;
+}
+
+.toolbox .group .item.clickable:hover, .toolbox .group .item.clickable.active {
+    transform: scale(1.05);
+    box-shadow: 0 0 6px rgba(33, 33, 33,.6);
+}
+
+.toolbox .group .item.clickable:active {
+    box-shadow: 0 0 2px rgba(33, 33, 33,.6);
+    transform: translateY(2px);
+}
+
+.toolbox .group .item img {
+    width: 32px;
+    height: 32px;
+}
+
+.toolbox .group .item .swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+label {
+    margin: 0;
+}
+
+.group-separator {
+    margin-left: 2px;
+    margin-right: 2px;
+    border-left: solid #aaa 1px;
+}
