@@ -372,7 +372,6 @@ $(document).ready(() => {
     });
 
     function handle_toggle_original(is_showing_original) {
-        console.log(is_showing_original);
         toggle_original_icon(is_showing_original);
         toggle_screen_label(is_showing_original);
         toggle_canvas_visibility(is_showing_original);
