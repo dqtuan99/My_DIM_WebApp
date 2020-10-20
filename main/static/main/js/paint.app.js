@@ -427,7 +427,7 @@ $(document).ready(() => {
         }
         $loading.show();
 
-        fetch('http://127.0.0.1:8000/API/predict-bg2/', {
+        fetch('http://127.0.0.1:8000/API/predict-bg/', {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
