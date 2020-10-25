@@ -18,6 +18,7 @@ let defaultCanvasPosition;
 let $loading = $('.loading-animation');
 let $main_app = $('.main-app');
 
+let root_domain = window.location.href;
 
 $(window).load(() => {
 
@@ -426,7 +427,7 @@ $(document).ready(() => {
         }
         $loading.show();
 
-        fetch('https://my-dim-webapp.herokuapp.com/API/predict-bg/', {
+        fetch(root_domain + 'API/predict-bg/', {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
