@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap');
+
+* {    
+    font-family: 'Open Sans', sans-serif;
+    user-select: none; /* supported by Chrome and Opera */
+   -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+   -moz-user-select: none; /* Firefox */
+   -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+body {
+    margin: 0px;
+    overflow: hidden;
+}
+
+.image-upload>input {
+  display: none;
+}
+
+.canvas-area canvas {
+    /* border: solid 4px #3f3737; */
+    z-index: 2;
+    opacity: 0.5;
+    cursor: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.canvas-area img {
+    z-index: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+
+.canvas-cursor {
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    transform: translate(-50%, -50%);
+    border: solid black 2px;
+    border-radius: 50%;
+    z-index: 5;
+    pointer-events: none;
+    cursor: none;
+    background-color: #808080;
+    opacity: 0.8;
+}
+
+.whole-screen {
+    display: flex;
+}
+
+.split-screen {
+    height: 100vh;
+    width: 50vw;
+    /* border: solid green 1px; */
+    overflow: hidden;
+}
+
+.split-screen.left {
+    background-color: rgba(214, 202, 202, 0.212);
+}
+
+.split-screen.right {
+    background: linear-gradient(rgba(255,255,255,.4), rgba(255,255,255,.4)), url("../image/png-background.a50d31b29aaf.jpg");
+    background-size: 500px 500px;
+    background-repeat: repeat;
+}
+
+.split-separator {
+    background-color: rgba(172, 163, 163, 0.274);
+    width: 5px;
+    z-index: 8;
+}
+
+.split-screen .label {
+    position: absolute;
+    transform: translate(-50%);
+    top: 14vh;
+    background-color: rgba(206, 190, 190, 0.24);
+    padding: 4px;
+    border-radius: 20px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.split-screen.left .label {
+    left: 25%;
+}
+
+.split-screen.right .label {    
+    left: 75%;
+}
+
+.containment-area {
+    /* margin-top: -100vh;
+    margin-left: -125vw;
+    width: 300vw;
+    height: 300vh; */
+    width: 1100vw;
+    height: 1100vh;
+    margin-left: -525vw;
+    margin-top: -500vh;
+    position: relative;
+}
+
+.drag-area {
+    /* top: 50vh;
+    left: 25vw;
+    width: 250vw;
+    height: 200vh; */
+    width: 1050vw;
+    height: 1000vh;
+    left: 25vw;
+    top: 50vh;
+}
+
+.canvas-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+}
+
+/*=========================================
+ * Effect 8
+=========================================*/
+.effect8 {
+    position:relative;
+    -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+       -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+            box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+.effect8:before, .effect8:after {
+    content:"";
+    position:absolute;
+    z-index:-1;
+    -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
+    box-shadow:0 0 20px rgba(0,0,0,0.8);
+    top:10px;
+    bottom:10px;
+    left:0;
+    right:0;
+    -moz-border-radius:100px / 10px;
+    border-radius:100px / 10px;
+}
+.effect8:after {
+    right:10px;
+    left:auto;
+    -webkit-transform:skew(8deg) rotate(3deg);
+       -moz-transform:skew(8deg) rotate(3deg);
+        -ms-transform:skew(8deg) rotate(3deg);
+         -o-transform:skew(8deg) rotate(3deg);
+            transform:skew(8deg) rotate(3deg);
+}
+/*=========================================
+=========================================*/

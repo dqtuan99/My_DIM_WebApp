@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Background Predictor{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/dropzone.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/toolbox.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/loading.css' %}">
+    <script type="module" src="{% static 'main/js/paint.app.js' %}" defer></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <!-- image console lib for testing -->
+    <script src="https://cdn.rawgit.com/adriancooney/console.image/c9e6d4fd/console.image.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    {% block body %}
+    <div class="drop-zone">
+        <span class="prompt">
+            Drop image file here or click to upload
+        </span>
+        <input id="imageLoader" type="file" onclick="this.value=null;" accept="image/*" style="display: none;" />
+    </div>
+    <div class="main-app">
+        <div class="whole-screen">
+            <div class="split-screen left">
+                <div class="label">Original + Masks</div>
+                <div class="containment-area">
+                    <div class="drag-area" id="draggable">
+                        <div class="canvas-area">
+                            <canvas id="canvas" width="640" height="480"></canvas>
+                            <img id="canvas-background" src="" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="split-separator effect8"></div>
+            <div class="split-screen right">
+                <div class="label">Result</div>
+                <div class="containment-area">
+                    <div class="drag-area" id="draggable2">
+                        <div class="canvas-area">
+                            <canvas id="canvas2" width="640" height="480"></canvas>
+                            <img id="canvas-background2" src="" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-cursor main-cursor"></div>
+        <div class="canvas-cursor"></div>
+
+        <div class="autofill-box">
+            <input type="checkbox" id="autofill" name="autofill" value="Autofill" checked>
+            <label for="autofill">Auto-fill</label>
+        </div>
+
+        <div class="toolbox editing">            
+            <div class="group tool">
+                <div class="item clickable" data-tool="dragger">
+                    <img src="{% static 'main/image/grab.svg' %}" alt="">
+                    <br />Move
+                </div>
+                <div class="item clickable" data-tool="paint-bucket">
+                    <img src="{% static 'main/image/paint-bucket.svg' %}" alt="">
+                    <br />Bucket
+                </div>
+                <div class="item clickable active" data-tool="brush">
+                    <img src="{% static 'main/image/brush.svg' %}" alt="">
+                    <br />Brush
+                </div>
+                <div class="item clickable" data-tool="eraser">
+                    <img src="{% static 'main/image/eraser.svg' %}" alt="">
+                    <br />Eraser
+                </div>
+                <div class="item2">
+                    <input type="number" id="brushSize" name="brush-size" min="10" max="65" step="5" value="25">
+                    <br />Brush size
+                </div>
+            </div>
+            <div class="group-separator"></div>
+            <div class="group color">
+                <div class="item clickable active" data-color="#808080">
+                    <div class="swatch" style="background-color: #808080"></div>
+                    Unsure
+                </div>
+                <div class="item clickable" data-color="#37d61a">
+                    <div class="swatch" style="background-color: #37d61a"></div>
+                    Certain
+                </div>
+            </div>
+            <div class="group-separator"></div>
+            <div class="group result">
+                <div class="item" data-result="clear">
+                    <img src="{% static 'main/image/clear.svg' %}" alt="">
+                    <br />Clear
+                </div>
+                <div class="item" data-result="restart">
+                    <img src="{% static 'main/image/restart.svg' %}" alt="">
+                    <br />Restart
+                </div>
+                <div class="item" data-result="predict">
+                    <img src="{% static 'main/image/cut.svg' %}" alt="">
+                    <br />Predict
+                </div>
+                <div class="item" data-result="toggle">
+                    <img src="{% static 'main/image/off.svg' %}" alt="">
+                    <br />Original
+                </div>
+                <div class="item" data-result="download">
+                    <img src="{% static 'main/image/download.svg' %}" alt="">
+                    <br />Download
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="loading-animation">
+        <div class="label">Predicting</div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    {% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+.drop-zone {
+    width: 640px;
+    max-width: 50vw;
+    height: 50vh;
+    max-height: 50vh;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: 500;
+    font-size: 20px;
+    cursor: pointer;
+    color: #777777;
+    border: 4px dashed #009578;
+    border-radius: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.drop-zone--over {
+    border-style: solid;
+}
+
+.drop-zone .prompt {
+    pointer-events: none;
+}
