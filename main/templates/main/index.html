@@ -92,11 +92,11 @@
             <div class="group color">
                 <div class="item clickable active" data-color="#808080">
                     <div class="swatch" style="background-color: #808080"></div>
-                    Unsure
+                    Unknown
                 </div>
                 <div class="item clickable" data-color="#37d61a">
                     <div class="swatch" style="background-color: #37d61a"></div>
-                    Certain
+                    Known
                 </div>
             </div>
             <div class="group-separator"></div>
@@ -108,6 +108,10 @@
                 <div class="item" data-result="restart">
                     <img src="{% static 'main/image/restart.svg' %}" alt="">
                     <br />Restart
+                </div>
+                <div class="item clickable" data-result="generate">
+                    <img src="{% static 'main/image/generate.svg' %}" alt="">
+                    <br />Generate
                 </div>
                 <div class="item" data-result="predict">
                     <img src="{% static 'main/image/cut.svg' %}" alt="">

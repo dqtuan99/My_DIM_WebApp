@@ -63,7 +63,8 @@ $(document).ready(() => {
 
     let $clear = $('[data-result="clear"');
     let $restart = $('[data-result="restart"]');
-    let $brush_size = $('#brushSize');
+    let $brush_size = $('#brushSize');    
+    let $generate = $('[data-result="generate"]');
     let $predict = $('[data-result="predict"]');
     let $toggle_original = $('[data-result="toggle"]');
     let $download = $('[data-result="download"]');
@@ -416,6 +417,46 @@ $(document).ready(() => {
         }
         paint2.canvas_bg.source = img_src;
     }
+    //====================================================
+
+
+    // Generate trimap handler
+    //====================================================
+    $generate.click(() => {
+        $loading.show();
+
+        fetch(root_domain + 'APIv2/get-trimap/', {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'input_image': paint.canvas_bg.source
+            })
+        })
+            .then(response => response.json())
+            .then(result => {
+                // console.log(result.trimap);
+                let img = new Image;
+                img.onload = () => {
+                    let current_w = paint.current_ratio * paint.upload_scaled_size.w;
+                    let current_h = paint.current_ratio * paint.upload_scaled_size.h
+                    paint.temp_context.drawImage(img, 0, 0, current_w, current_h);
+                    paint.context.drawImage(img, 0, 0, current_w, current_h);
+                };
+                img.src = result.trimap
+                
+                $('#autofill').prop('checked', false);
+                activeClickableGUI($clear, true);
+                activeClickableGUI($predict, true);
+                $loading.hide();
+            })
+            .catch(error => {
+                alert(error);
+                $loading.hide();
+            });
+    });
     //====================================================
 
 
