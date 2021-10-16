@@ -12,4 +12,3 @@ numpy==1.18.5
 imgaug==0.4.0
 opencv_python==4.4.0.44
 Pillow==8.2.0
-skimage==0.0

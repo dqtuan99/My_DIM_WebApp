@@ -9,8 +9,23 @@ import cv2
 import numpy as np
 from PIL import Image
 
-def get_trimap(input_mask, eroision_iter=3, dilate_iter=3):
+def get_trimap(input_mask, erosion_iter=3, dilation_iter=3):
+    """ Hàm giúp biến đổi binary mask đầu vào thành ảnh trimap
+
+    Tham số đầu vào
+    ----------
+    input_mask : numpy array
+        Là binary mask mà ta cần truyền vào để biến thành trimap
+    erosion_iter : int
+        Cho biết số vòng lặp của phép toán Erosion
+    dilation_iter : int
+        Cho biết số vòng lặp của phép toán Dilation
+
+    Kết quả trả về
+    -------
+    trimap : Bản đồ trimap mà ta cần chuyển đổi từ binary mask
     
+    """
     input_mask[input_mask==1] = 255
     
     d_kernel = np.ones((3,3))
@@ -20,8 +35,8 @@ def get_trimap(input_mask, eroision_iter=3, dilate_iter=3):
     input_mask = cv2.morphologyEx(input_mask, cv2.MORPH_CLOSE, d_kernel)
     
     # generate unknown region around object contour
-    erode  = cv2.erode(input_mask, d_kernel, iterations=eroision_iter)
-    dilate = cv2.dilate(input_mask, d_kernel, iterations=dilate_iter)    
+    erode  = cv2.erode(input_mask, d_kernel, iterations=erosion_iter)
+    dilate = cv2.dilate(input_mask, d_kernel, iterations=dilation_iter)    
     unknown1 = cv2.subtract(input_mask, erode)
     unknown2 = cv2.subtract(dilate, input_mask)
     unknowns = cv2.add(unknown1, unknown2)    
